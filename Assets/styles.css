@@ -1,11 +1,15 @@
+body{
+  background-color: aliceblue;
+}
 .headDiv{
   height: 150px;
   width: 100%;
   position: sticky;
   top: 0;
   left: 0;
-  background-color: rgba(40,40,40,0.9);
+  background-color: rgb(40,40,40);
   color: aliceblue;
+  z-index: 1000;
 }
 main{
   margin-top: 150px;
@@ -18,13 +22,99 @@ main{
 }
 .imgHead{
   float: left;
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
+  transition: transform 0.2s ease-in, 0.2s ease-out;
+}
+.imgHead:hover{
+  transform: scale(1.1);
 }
 .navList{
   list-style: none;
   text-decoration: none;
 }
 .navList li a{
+  color: aliceblue;
   text-decoration: none;
+  padding: 5px;
+  transition: transform 0.2s ease-in, 0.2s ease-out;
+}
+.navList li{
+  padding: 5px;
+}
+.navList li a:hover{
+  background-color: aliceblue;
+  color: rgb(40, 40, 40);
+  
+}
+.footDiv{
+  display: inline-block;
+  margin-top: 150px;
+  height: 150px;
+  width: 100%;
+  position: relative;
+  background-color: rgb(40,40,40);
+  color: aliceblue;
+}
+.footText{
+  float: left;
+  text-align: center;
+  font-size: 150%;
+  padding-top: 50px;
+  display: inline;
+}
+.navigationFOOTER{
+  float: right;
+  width: 150px;
+  height: 150px;
+  transition: transform 0.2s ease-in, 0.2s ease-out;
+}
+#homeHead1{
+  text-align: center;
+  font-size: 300%;
+}
+#homeHead2{
+  text-align: center;
+  font-size: 300%;
+}
+#homeHead3{
+  text-align: center;
+  font-size: 300%;
+}
+#homeP1{
+  text-align: center;
+  font-size: 150%;
+}
+#homeP2{
+  text-align: center;
+  font-size: 150%;
+}
+#homeLinks{
+  list-style: none;
+  text-align: center;
+  font-size: 150%;
+  background-color: rgb(40, 40, 40);
+}
+#homeLinks li:hover{
+  background-color: aliceblue;
+  color: rgb(40, 40, 40);
+}
+#homeLinks li a{
+  color: aliceblue;
+  text-decoration: none;
+  padding: 15px;
+  transition: transform 0.2s ease-in, 0.2s ease-out;
+}
+#homeLinks li a:hover{
+  color: rgb(40, 40, 40);
+  text-decoration: none;
+  padding: 15px;
+  transition: transform 0.2s ease-in, 0.2s ease-out;
+}
+#homeLinks li{
+  color: aliceblue;
+  text-decoration: none;
+  padding: 15px;
+  margin: 15px;
+  transition: transform 0.2s ease-in, 0.2s ease-out;
 }
