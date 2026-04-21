@@ -1,0 +1,30 @@
+.headDiv{
+  height: 150px;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  left: 0;
+  background-color: rgba(40,40,40,0.9);
+  color: aliceblue;
+}
+main{
+  margin-top: 150px;
+}
+.mainHeader{
+  float: left;
+  width: 60%;
+  text-align: center;
+  font-size: 300%;
+}
+.imgHead{
+  float: left;
+  width: 100px;
+  height: 100px;
+}
+.navList{
+  list-style: none;
+  text-decoration: none;
+}
+.navList li a{
+  text-decoration: none;
+}
