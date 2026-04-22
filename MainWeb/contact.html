@@ -21,10 +21,31 @@
           <li><a href="../MainWeb/music.html">Music</a></li>
         </ul>
     </nav>
+    <a href="../MainWeb/LoginPages/logIn.html"><div class="logIn">Log In!</div></a>
+    <a href="../MainWeb/LoginPages/signUp.html"><div class="signUp">Sign Up!</div></a>
   </header>
+  <main>
+    <section>
+      <h2 id="contactUs">Contact Us</h2>
+      <p id="contactP">If you have any questions or concerns, please feel free to reach out to us using the information below:</p>
+      <form id="contactForm">
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="username"><br><br>
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name"><br><br>
+        <label for="subject">Subject:</label><br>
+        <input type="text" id="subject" name="subject"><br><br>
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email"><br><br>
+        <label for="message">Message:</label><br>
+        <textarea id="message" name="message" rows="4" cols="50"></textarea><br><br>
+        <input type="submit" value="Submit" id="submit">
+      </form>
+    </section>
+  </main>
   <footer class="footDiv">
     <div class="footText">
-      <p>Copyright &copy; 2024 Shank's Co. All rights reserved.</p>
+      <p>Copyright &copy; 2026 Shank's Co. All rights reserved.</p>
     </div>
     <nav class="navigationFOOTER">
         <ul class="navList">
@@ -36,5 +57,7 @@
         </ul>
     </nav>
   </footer>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script src="../Assets/scripts/contacts.js"></script>
 </body>
 </html>
