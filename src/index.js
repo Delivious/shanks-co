@@ -6,19 +6,20 @@ const bcrypt = require('bcrypt');
 const app = express();
 // convert data into json format
 app.use(express.json());
-// Static file
-app.use(express.static("public"));
+// Static file - serve from parent directory
+app.use(express.static(path.join(__dirname, "..")));
 
 app.use(express.urlencoded({ extended: false }));
 //use EJS as the view engine
 app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "..", "views"));
 
 app.get("/", (req, res) => {
-    res.render("login");
+    res.redirect("/MainWeb/LoginPages/logIn.html");
 });
 
 app.get("/signup", (req, res) => {
-    res.render("signup");
+    res.redirect("/MainWeb/LoginPages/signUp.html");
 });
 
 // Email validation function
@@ -53,8 +54,8 @@ app.post("/signup", async (req, res) => {
 
         data.password = hashedPassword; // Replace the original password with the hashed one
 
-        const userdata = await collection.insertMany(data);
-        console.log(userdata);
+        const userdata = await collection.insertOne(data);
+        console.log("User added to database:", userdata);
         res.send('User registered successfully. Please log in.');
     }
 
@@ -82,7 +83,9 @@ app.post("/login", async (req, res) => {
         if (!isEmailMatch) {
             return res.send("wrong Email");
         }
-        res.render("home");
+        res.redirect("/index.html");
+        console.log("User logged in successfully:", check);
+        localStorage.setItem("username", req.body.username);
     }
     catch {
         res.send("wrong Details");
@@ -114,6 +117,16 @@ app.post("/verify-email", async (req, res) => {
     }
     catch (error) {
         res.json({ valid: false, message: 'An error occurred during verification.' });
+    }
+});
+
+// Debug endpoint: View all users (remove this in production!)
+app.get("/debug/users", async (req, res) => {
+    try {
+        const users = await collection.find({});
+        res.json(users);
+    } catch (error) {
+        res.json({ error: error.message });
     }
 });
 

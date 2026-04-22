@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="../../Assets/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log In</title>
+</head>
+<body>
+  <header class="headDiv">
+    <a href="../../index.html">
+      <img src="../../Assets/imgs/projectnevermore.png" alt="Shank's Co." class="imgHead">
+    </a>
+    <h1 class="mainHeader">Shank's Co.</h1>
+    <nav class="navigation">
+        <ul class="navList">
+          <li><a href="../products.html">Products</a></li>
+          <li><a href="../about.html">About</a></li>
+          <li><a href="../contact.html">Contacts</a></li>
+          <li><a href="../games.html">Games</a></li>
+          <li><a href="../music.html">Music</a></li>
+        </ul>
+    </nav>
+    <a href="logIn.html"><div class="logIn">Log In!</div></a>
+    <a href="signUp.html"><div class="signUp">Sign Up!</div></a>
+  </header>
+  <main>
+    <section class="logInSection">
+      <h2>Log In to Your Account</h2>
+      <form id="logInForm" action="http://localhost:5000/login" method="POST" class="logInForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        
+        <button type="submit">Log In</button>
+      </form>
+    </section>
+  </main>
+  <footer class="footDiv">
+    <div class="footText">
+      <p>Copyright &copy; 2024 Shank's Co. All rights reserved.</p>
+    </div>
+    <nav class="navigationFOOTER">
+        <ul class="navList">
+          <li><a href="../products.html">Products</a></li>
+          <li><a href="../about.html">About</a></li>
+          <li><a href="../contact.html">Contacts</a></li>
+          <li><a href="../games.html">Games</a></li>
+          <li><a href="../music.html">Music</a></li>
+        </ul>
+    </nav>
+  </footer>
+  <script src="../../Assets/scripts/usernamePlace.js"></script>  <script>
+    document.getElementById('logInForm').addEventListener('submit', function(e) {
+      const username = document.getElementById('username').value;
+      if (username) {
+        localStorage.setItem('username', username);
+      }
+    });
+  </script></body>
+</html>
