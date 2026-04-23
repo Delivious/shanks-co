@@ -3,11 +3,12 @@ require('dotenv').config();
 
 const mongoose = require('mongoose');
 
-// Debug: Log the environment variable
-console.log("Connecting to local MongoDB...");
+// Use MongoDB Atlas connection string from environment variable
+// Format: mongodb+srv://username:password@cluster.mongodb.net/database
+const connectionString = process.env.MONGODB_URI || "mongodb+srv://masoncosta31210_db_user:" + process.env.pass + "@shanksco.ckbmk3t.mongodb.net/shanks-co?retryWrites=true&w=majority";
 
-const connectionString = "mongodb://localhost:27017/shanks-co"; // Local MongoDB connection string
-console.log("Connection String:", connectionString);
+console.log("Connecting to MongoDB...");
+console.log("Connection String:", connectionString.replace(process.env.pass, "****"));
 
 const connect = mongoose.connect(connectionString);
 // Check database connected or not

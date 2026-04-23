@@ -207,3 +207,36 @@ main{
   color: white;
   cursor: pointer;
 }
+#productsHead, #gamesHead{
+  text-align: center;
+  font-size: 300%;
+}
+#productsP, #gamesP{
+  text-align: center;
+  font-size: 150%;
+}
+#comingSoonP{
+  text-align: center;
+  font-size: 500%;
+  color: red;
+  font-weight: bold;
+}
+#silkDiv{
+  text-align: center;
+  font-size: 150%;
+  background-color: rgb(40, 40, 40);
+  color: aliceblue;
+  width: fit-content;
+  padding: 10px;
+  margin: 10px auto;
+  border-radius: 5px;
+  text-decoration: none;
+}
+#silkDiv:hover{
+  background-color: navy;
+  color: white;
+  cursor: pointer;
+}
+a{
+  text-decoration: none;
+}
