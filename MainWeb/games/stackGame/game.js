@@ -12,6 +12,7 @@ let speed = 2;
 let gravity = 0.4;
 let isDropping = false;
 let gameOver = false;
+let landed = false; // ✅ FIX: prevents repeated collision processing
 
 // Block class
 class Block {
@@ -59,7 +60,9 @@ function init() {
 function spawnBlock() {
   const last = blocks[blocks.length - 1];
   currentBlock = new Block(0, last.y - 30, last.width, 20, randomColor());
+
   isDropping = false;
+  landed = false; // ✅ reset landing lock
 }
 
 // Drop block
@@ -68,12 +71,18 @@ function dropBlock() {
   isDropping = true;
 }
 
-// Landing physics
+// Landing physics (FIXED)
 function handleLanding() {
+  if (landed) return; // ✅ prevent multiple triggers
+
   const last = blocks[blocks.length - 1];
 
+  // wait until block reaches stack
   if (currentBlock.y + currentBlock.height < last.y) return;
 
+  landed = true; // lock immediately
+
+  // snap to position
   currentBlock.y = last.y - currentBlock.height;
 
   const left = Math.max(currentBlock.x, last.x);
@@ -82,7 +91,7 @@ function handleLanding() {
     last.x + last.width
   );
 
-  const overlap = right - left;
+  let overlap = right - left;
 
   // ❌ miss = game over
   if (overlap <= 0) {
@@ -95,10 +104,8 @@ function handleLanding() {
   currentBlock.width = overlap;
   currentBlock.x = left;
 
-  // perfect bonus
-  if (Math.abs(overlap - last.width) < 5) {
-    speed += 0.2;
-  }
+  // stabilize position (prevents micro jitter)
+  currentBlock.x = Math.round(currentBlock.x);
 
   isDropping = false;
   currentBlock.dy = 0;
@@ -114,7 +121,7 @@ function endGame() {
   gameOver = true;
 }
 
-// Draw
+// Draw everything
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -135,7 +142,7 @@ function draw() {
   }
 }
 
-// Loop
+// Game loop
 function update() {
   if (!gameOver) {
     currentBlock.update();
@@ -169,6 +176,6 @@ canvas.addEventListener("click", () => {
   }
 });
 
-// Start
+// Start game
 init();
 update();
