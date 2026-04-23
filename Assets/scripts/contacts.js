@@ -11,9 +11,33 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-window.onload = function(){
-    document.getElementById('contactForm').addEventListener('submit', async function(event) {
+// Initialize form listener
+console.log("contacts.js script loaded");
+
+let formInitialized = false;  // Flag to prevent multiple initializations
+
+function setupContactForm() {
+    // Only initialize once
+    if (formInitialized) {
+        console.log("Form already initialized, skipping");
+        return;
+    }
+    formInitialized = true;
+    
+    console.log("setupContactForm() called");
+    const form = document.getElementById('contactForm');
+    console.log("contactForm element found:", !!form);
+    
+    if (!form) {
+        console.error("ERROR: contactForm element not found!");
+        return;
+    }
+    
+    console.log("Adding submit event listener to form");
+    form.addEventListener('submit', async function(event) {
+        console.log("Form submit event fired!");
         event.preventDefault();     
+        
         const templateParams = {
             name: document.getElementById('name').value,
             email: document.getElementById('email').value,
@@ -22,20 +46,36 @@ window.onload = function(){
         };
         const username = document.getElementById('username').value;
 
+        console.log("Form data collected:", { username });
+
         // Validate all fields are filled
         if (!username || !templateParams.name || !templateParams.email || !templateParams.message || !templateParams.title) {
+            console.log("Validation failed: empty fields");
             alert('Please fill in all fields before submitting the form.');
             return;
         }
 
         // Validate email format
         if (!isValidEmail(templateParams.email)) {
+            console.log("Email format validation failed");
             alert('Please provide a valid email address.');
+            return;
+        }
+        try{
+            if (localStorage.getItem("username") !== username) {
+                console.log("No user logged in, cannot submit form");
+                alert('Please use your account username to submit the form.');
+                return;
+            }
+        } catch (error) {
+            console.log("Error accessing localStorage:", error);
+            alert('An error occurred while checking login status. Please try again.');
             return;
         }
 
         // Verify email matches account email
         try {
+            console.log("Verifying email with server...");
             const response = await fetch('http://localhost:5000/verify-email', {
                 method: 'POST',
                 headers: {
@@ -45,6 +85,7 @@ window.onload = function(){
             });
 
             const result = await response.json();
+            console.log("Email verification result:", result);
 
             if (!result.valid) {
                 alert(result.message);
@@ -52,6 +93,7 @@ window.onload = function(){
             }
 
             // Email is verified, send the email
+            console.log("Email verified, sending with EmailJS...");
             emailjs.send(serviceID, templateID, templateParams)
                 .then(function(response) {
                     console.log('SUCCESS!', response.status, response.text);
@@ -67,3 +109,15 @@ window.onload = function(){
         }
     });
 }
+
+// Use multiple event listeners for maximum compatibility
+if (document.readyState === 'loading') {
+    console.log("Page is still loading");
+    document.addEventListener('DOMContentLoaded', setupContactForm);
+} else {
+    console.log("Page already loaded, setting up now");
+    setupContactForm();
+}
+
+// Also use window.load
+window.addEventListener('load', setupContactForm);
