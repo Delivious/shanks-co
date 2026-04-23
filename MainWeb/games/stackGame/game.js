@@ -12,7 +12,6 @@ let speed = 2;
 let gravity = 0.4;
 let isDropping = false;
 let gameOver = false;
-let score = 0;
 
 // Block class
 class Block {
@@ -44,11 +43,11 @@ class Block {
   }
 }
 
-// Create first base block
+// Init game
 function init() {
   blocks = [];
-  score = 0;
   gameOver = false;
+  speed = 2;
 
   const base = new Block(100, canvas.height - 40, 200, 20, "black");
   blocks.push(base);
@@ -56,7 +55,7 @@ function init() {
   spawnBlock();
 }
 
-// Spawn new moving block
+// Spawn block
 function spawnBlock() {
   const last = blocks[blocks.length - 1];
   currentBlock = new Block(0, last.y - 30, last.width, 20, randomColor());
@@ -69,85 +68,96 @@ function dropBlock() {
   isDropping = true;
 }
 
-// Handle landing + physics
-function checkCollision() {
+// Landing physics
+function handleLanding() {
   const last = blocks[blocks.length - 1];
 
-  if (currentBlock.y + currentBlock.height >= last.y) {
-    currentBlock.y = last.y - currentBlock.height;
+  if (currentBlock.y + currentBlock.height < last.y) return;
 
-    // Calculate overlap
-    const overlap =
-      Math.min(
-        currentBlock.x + currentBlock.width,
-        last.x + last.width
-      ) - Math.max(currentBlock.x, last.x);
+  currentBlock.y = last.y - currentBlock.height;
 
-    if (overlap <= 0) {
-      endGame();
-      return;
-    }
+  const left = Math.max(currentBlock.x, last.x);
+  const right = Math.min(
+    currentBlock.x + currentBlock.width,
+    last.x + last.width
+  );
 
-    // Trim block
-    currentBlock.width = overlap;
-    currentBlock.x = Math.max(currentBlock.x, last.x);
+  const overlap = right - left;
 
-    blocks.push(currentBlock);
-    score++;
-
-    // Increase difficulty slightly
-    speed += 0.1;
-
-    spawnBlock();
+  // ❌ miss = game over
+  if (overlap <= 0) {
+    screenShake();
+    endGame();
+    return;
   }
+
+  // ✂ trim block
+  currentBlock.width = overlap;
+  currentBlock.x = left;
+
+  // perfect bonus
+  if (Math.abs(overlap - last.width) < 5) {
+    speed += 0.2;
+  }
+
+  isDropping = false;
+  currentBlock.dy = 0;
+
+  blocks.push(currentBlock);
+
+  speed += 0.1;
+  spawnBlock();
 }
 
-// End game
+// Game over
 function endGame() {
   gameOver = true;
 }
 
-// Draw everything
+// Draw
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw blocks
-  blocks.forEach(block => block.draw());
-  currentBlock.draw();
+  blocks.forEach(b => b.draw());
+  if (currentBlock) currentBlock.draw();
 
-  // Score
   ctx.fillStyle = "black";
   ctx.font = "20px Arial";
-  ctx.fillText("Score: " + score, 10, 30);
+  ctx.fillText("Score: " + (blocks.length - 1), 10, 30);
 
   if (gameOver) {
     ctx.fillStyle = "red";
     ctx.font = "40px Arial";
-    ctx.fillText("Game Over", 100, 300);
+    ctx.fillText("Game Over", 90, 300);
 
     ctx.font = "20px Arial";
     ctx.fillText("Click to restart", 120, 340);
   }
 }
 
-// Game loop
+// Loop
 function update() {
   if (!gameOver) {
     currentBlock.update();
-
-    if (isDropping) {
-      checkCollision();
-    }
+    handleLanding();
   }
 
   draw();
   requestAnimationFrame(update);
 }
 
-// Helpers
+// Utils
 function randomColor() {
   const colors = ["#FF6B6B", "#6BCB77", "#4D96FF", "#FFD93D", "#B983FF"];
   return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// Screen shake
+function screenShake() {
+  canvas.style.transform = "translate(5px, 5px)";
+  setTimeout(() => {
+    canvas.style.transform = "translate(0, 0)";
+  }, 100);
 }
 
 // Controls
@@ -159,6 +169,6 @@ canvas.addEventListener("click", () => {
   }
 });
 
-// Start game
+// Start
 init();
 update();
