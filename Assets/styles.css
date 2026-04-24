@@ -240,3 +240,15 @@ main{
 a{
   text-decoration: none;
 }
+#aboutHead{
+  text-align: center;
+  font-size: 300%;
+}
+#aboutP{
+  text-align: center;
+  font-size: 150%;
+} 
+#aboutMission{
+  text-align: center;
+  font-size: 150%;
+}
