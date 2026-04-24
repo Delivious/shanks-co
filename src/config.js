@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 // Build URI safely
 const connectionString =
   process.env.MONGODB_URI ||
-  `mongodb+srv://masoncosta31210_db_user:${encodeURIComponent(process.env.MONGO_PASS)}@shanksco.ckbmk3t.mongodb.net/shanks-co?retryWrites=true&w=majority`;
+  `mongodb+srv://masoncosta31210_db_user:${encodeURIComponent(process.env.pass)}@shanksco.ckbmk3t.mongodb.net/shanks-co?retryWrites=true&w=majority`;
 
 console.log("Connecting to MongoDB Atlas...");
 
