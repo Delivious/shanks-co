@@ -100,6 +100,7 @@ let rebirthCost=100000
 const keys = {}
 let x = 0
 let y = 0
+let clicked = false
 let rpsPercent = 0
 let rpsRebirth = 0
 let moveX = 0
@@ -167,14 +168,17 @@ function spawnShanks() {
 }
 function clickShanks(src, shank) {
   // Handle shank click
+  let shanksClicked = {}
   shank.remove()
-  shankClicked={
+  shanksClicked={
     "ninjashanks": () => {
       priceMultiplier = 0.5
       const globalHeader = document.createElement("h2")
       globalHeader.textContent = "Ninja Shanks has stolen the upgrades! They cost half as much to get back for the next minute!"
       globalHeader.id = "shankHeader"
+      clicked = true
       setTimeout(() => {
+        clicked = false
         priceMultiplier = 1
         globalHeader.remove()
         sharpen.textContent = `Get your Nail to slash attack the button for ${5*sharpenMultiplier} Rosaries a second! Cost: ${costs[1]*priceMultiplier} Rosaries`
@@ -191,17 +195,19 @@ function clickShanks(src, shank) {
       document.body.appendChild(globalHeader)
     },
     "tabbycatshanks": () => {
+      clicked = true
       const globalHeader = document.createElement("h2")
       globalHeader.textContent = "Tabby Cat Shanks has searched far and wide for your worth in Rosaries! You gain 10 minutes worth of Rosaries!"
       globalHeader.id = "shankHeader"
       roseValue += rps * 600
       setTimeout(() => {
-        
+        clicked = false
         globalHeader.remove()
       }, 5000)
       document.body.appendChild(globalHeader)
     },
     "v1shanks": () => {
+      clicked = true
       const globalHeader = document.createElement("h2")
       globalHeader.textContent = "V1 Shanks has granted his agility! Your speed in the boss arena is doubled for the next 5 minutes!"
       globalHeader.id = "shankHeader"
@@ -209,21 +215,25 @@ function clickShanks(src, shank) {
       setTimeout(() => {
         speedMultiplier = 1
         globalHeader.remove()
+        clicked = false
       }, 300000)
       document.body.appendChild(globalHeader)
   },
   "gojoshanks": () => {
+      clicked = true
       const globalHeader = document.createElement("h2")
       globalHeader.textContent = "Gojo has granted his cursed energy! Your damage in the boss arena is doubled for the next 5 minutes!"
       globalHeader.id = "shankHeader"
       damageMultiplier = 2
       setTimeout(() => {
+        clicked = false
         damageMultiplier = 1
         globalHeader.remove()
       }, 300000)
       document.body.appendChild(globalHeader)
   },
   "normalshanks": () => {
+    clicked = true
       const globalHeader = document.createElement("h2")
       globalHeader.textContent = "Shanks has granted you his wealth! Your currency is doubled for the next 5 minutes!"
       globalHeader.id = "shankHeader"
@@ -231,11 +241,12 @@ function clickShanks(src, shank) {
       setTimeout(() => {
         currencyMultiplier = 1
         globalHeader.remove()
+        clicked = false
       }, 300000)
       document.body.appendChild(globalHeader)
   }
 }
-  shankClicked[src]?.()
+  shanksClicked[src]?.()
 }
 function funnyGuyBounce(shank, direction){
   // deterministic single-rAF bounce + rotation; no setInterval inside rAF
@@ -857,14 +868,11 @@ function isColliding(el1, el2) {
 function addValue(){
   // spawn before we hide/swap the button so particles originate from
   // the image the user actually clicked
-  spawnShanks()
+  if (!clicked && Math.floor(Math.random() * 1000) == 500) {
+    spawnShanks()
+  }
   spawnParticles()
-  if (rebirthCount == 0){
-    roseValue+=multiplier *rebirthMultiplier + Math.floor(((rpsRebirth + rpsPercent) * rpsPrevious))*currencyMultiplier
-  }
-  else{
-    roseValue+=multiplier * rebirthMultiplier + Math.floor(((rpsRebirth + rpsPercent) * rpsPrevious))*currencyMultiplier
-  }
+  roseValue += multiplier * rebirthMultiplier + Math.floor(((rpsRebirth + rpsPercent) * rpsPrevious)) * currencyMultiplier
   setTimeout(() =>{
       hornetBtn.style.transform="scale(1.16)"
       hornetBtnNew.style.transform="scale(1.16)"
