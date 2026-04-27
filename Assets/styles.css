@@ -237,6 +237,22 @@ main{
   color: white;
   cursor: pointer;
 }
+#FnfDiv{
+  text-align: center;
+  font-size: 150%;
+  background-color: rgb(40, 40, 40);
+  color: aliceblue;
+  width: fit-content;
+  padding: 10px;
+  margin: 10px auto;
+  border-radius: 5px;
+  text-decoration: none;
+}
+#FnfDiv:hover{
+  background-color: navy;
+  color: white;
+  cursor: pointer;
+}
 a{
   text-decoration: none;
 }
