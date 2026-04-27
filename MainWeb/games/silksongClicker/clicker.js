@@ -132,7 +132,7 @@ function spawnShanks() {
       `${defaultDir}/ninjashanks.png`, //he steals all the upgrades and sells them to you at half price
       `${defaultDir}/tabbycatshanks.png`, //kitty cat finds and give you your worth in rosearys from 10 minutes
       `${defaultDir}/v1shanks.png`, //speed buff
-      `${defaultDir}/unfinishedgojo.png`, //damage buff
+      `${defaultDir}/gojoshanks.png`, //damage buff
       `${defaultDir}/normalshanks.png` //x2 multi
     ];
 
@@ -212,7 +212,7 @@ function clickShanks(src, shank) {
       }, 300000)
       document.body.appendChild(globalHeader)
   },
-  "unfinishedgojo": () => {
+  "gojoshanks": () => {
       const globalHeader = document.createElement("h2")
       globalHeader.textContent = "Gojo has granted his cursed energy! Your damage in the boss arena is doubled for the next 5 minutes!"
       globalHeader.id = "shankHeader"
