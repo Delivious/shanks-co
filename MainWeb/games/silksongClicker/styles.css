@@ -1,0 +1,723 @@
+#h1{
+    font-size: 500%;
+    font-weight: bolder;
+    text-align: center;
+    padding-left: 32%;
+    max-width: 36%;
+    text-shadow: 5px 5px 10px rgba(0,0,0,.15), -5px -5px 10px rgba(255,255,255,0.6);
+}
+#bossGuy{
+  color: white;
+  position: fixed;
+  top:50%;
+  width: 25%;
+  height: 25%;
+  right:13.5%;
+  font-size: 200%;
+  display: none;
+  z-index: 100002;
+
+}
+#body1{
+    background-image: url("./assets/background2.png");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    position: relative;
+}
+#body2{
+    background: linear-gradient(90deg, rgb(179, 53, 53), darkred);
+    position: relative;
+}
+#autoclick{
+    margin-top: 30px;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    color: green;
+    text-align: center;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    
+    border: 6px solid darkgreen;
+    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-radius: 14px;
+    background-image: image-set("./assets/rock.jpg");
+    transition: transform 0.2s ease-out;
+}
+#autoclick:hover{
+    margin-top: 30px;
+    text-align: center;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    border-radius: 14px;
+    transform: translateX(5px) translateY(-10px);
+    box-shadow: 4px 4px 10px rgba(0,0,0,.15), -4px -4px 10px rgba(37, 255, 30, 0.6);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+#lighttool{
+    margin-top: 30px;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    color: green;
+    text-align: center;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    
+    border: 6px solid darkgreen;
+    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-radius: 14px;
+    background-image: image-set("./assets/rock.jpg");
+    transition: transform 0.2s ease-out;
+}
+#rps{
+    text-align: center;
+    font-weight: bolder;
+    font-family: 'Courier New', Courier, monospace;
+    float: left;
+    margin-left: 45%;
+}
+#lighttool:hover{
+    margin-top: 30px;
+    text-align: center;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    border-radius: 14px;
+    transform: translateX(5px) translateY(-10px);
+    box-shadow: 4px 4px 10px rgba(0,0,0,.15), -4px -4px 10px rgba(37, 255, 30, 0.6);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+#sharpen{
+    margin-top: 30px;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    color: green;
+    text-align: center;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    
+    border: 6px solid darkgreen;
+    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-radius: 14px;
+    background-image: image-set("./assets/rock.jpg");
+    transition: transform 0.2s ease-out;
+}
+#sharpen:hover{
+    margin-top: 30px;
+    text-align: center;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    border-radius: 14px;
+    transform: translateX(5px) translateY(-10px);
+    box-shadow: 4px 4px 10px rgba(0,0,0,.15), -4px -4px 10px rgba(37, 255, 30, 0.6);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.clear{
+    clear: both;
+}
+#hornetBtn1{
+    float: left;
+    margin: 30px;
+    margin-left: 41%;
+    transform-origin: center;
+    transition: transform 0.06s ease-out;
+}
+.particle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    pointer-events: none;
+}
+#hornetVal{
+    font-weight: bolder;
+    font-family: 'Courier New', Courier, monospace;
+    float: left;
+    margin-left: 45%;
+}
+#threefold{
+    margin-top: 30px;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    color: green;
+    text-align: center;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    
+    border: 6px solid darkgreen;
+    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-radius: 14px;
+    background-image: image-set("./assets/rock.jpg");
+    transition: transform 0.2s ease-out;
+}
+#threefold:hover{
+    margin-top: 30px;
+    text-align: center;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    border-radius: 14px;
+    transform: translateX(5px) translateY(-10px);
+    box-shadow: 4px 4px 10px rgba(0,0,0,.15), -4px -4px 10px rgba(37, 255, 30, 0.6);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+#btn1{
+    display: none;
+    float: left;
+    margin: 30px;
+    margin-left: 41%;
+    transform-origin: center;
+    transition: transform 0.06s ease-out;
+}
+#btn2{
+    display: none;
+    float: left;
+    margin: 30px;
+    margin-left: 41%;
+    transform-origin: center;
+    transition: transform 0.06s ease-out;
+}
+#btn3{
+    display: none;
+    float: left;
+    margin: 30px;
+    margin-left: 41%;
+    transform-origin: center;
+    transition: transform 0.06s ease-out;
+}
+#btn4{
+    display: none;
+    float: left;
+    margin: 30px;
+    margin-left: 41%;
+    transform-origin: center;
+    transition: transform 0.06s ease-out;
+}
+#btn5{
+    display: none;
+    float: left;
+    margin: 30px;
+    margin-left: 41%;
+    transform-origin: center;
+    transition: transform 0.06s ease-out;
+}
+#btn6{
+    display: none;
+    float: left;
+    margin: 30px;
+    margin-left: 41%;
+    transform-origin: center;
+    transition: transform 0.06s ease-out;
+}
+#btn7{
+    display: none;
+    float: left;
+    margin: 30px;
+    margin-left: 41%;
+    transform-origin: center;
+    transition: transform 0.06s ease-out;
+}
+#btn8{
+    display: none;
+    float: left;
+    margin: 30px;
+    margin-left: 41%;
+    transform-origin: center;
+    transition: transform 0.06s ease-out;
+}
+#btn9{
+    display: none;
+    float: left;
+    margin: 30px;
+    margin-left: 41%;
+    transform-origin: center;
+    transition: transform 0.06s ease-out;
+}
+#upgradeContainer{
+    position: fixed;
+    top: -20px;
+    left: 75%;
+    width: 25%;
+    height: 30%;
+    justify-content: center;
+    margin-top: 20px;
+    background: linear-gradient(90deg, rgb(4, 57, 92), rgb(30, 30, 30),rgb(4, 57, 92), rgb(30, 30, 30),rgb(4, 57, 92), rgb(30, 30, 30));
+    z-index: 900;
+    border-radius: 5%;
+    border: 3px solid rgb(30,30,30);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+
+}
+#upg1{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    float: left;
+}
+#upg1:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+.upgradeDesc{
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: -220px;
+    width: 200px;
+    height: 200px;
+    max-width: 200px;
+    color: white;
+    font-style: italic;
+    background-color: rgba(25, 25, 25, 1);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid white;
+    z-index: 1000;
+}
+#upg2{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    float: left;
+}
+#upg2:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+#upg3{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    float: left;
+}
+#upg3:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+#upg4{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    float: left;
+}
+#upg4:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+#rebirthMenu{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100000;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+#rebirthBtn{
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    background-image: url("./assets/rock.jpg");
+    border: none;
+    color: green;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 100001;
+    height: 11%;
+}
+#rebirthTree{
+    position: fixed;
+    top: 15%;
+    left: 25%;
+    width: 50%;
+    height: 65%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100001;
+    background-color: rgb(0, 0, 0);   
+    color: white;
+}
+#upg5{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    float: left;
+}
+#upg5:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+#upg6{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    float: left;
+}
+#upg6:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+#upg7{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    float: left;
+}
+#upg7:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+#upg8{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    float: left;
+}
+#upg8:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+#upg9{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    float: left;
+}
+#upg9:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+#upg10{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    float: left;
+}
+#upg10:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+#upg11{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    float: left;
+}
+#upg11:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+#createUserAndLogin{
+    position: fixed;
+    top: 0px;
+    left: 125px;
+    background-color: rgba(130, 130, 130, 0.2);
+    border: none;
+    color: black;
+    height: 11%;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 100001;
+}
+
+.login1{
+    margin-left: 35%;
+}
+#usernameLog, #passwordLog{
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+    width: 30%;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,.15);
+}
+#loginBtn{
+    display: block;
+    margin: 20px auto;
+    width: 30%;
+    padding: 10px 20px;
+    background-color: rgba(255,255,255,1);
+    border: 1px solid rgba(0,0,0,.15);
+    color: rgba(100,100,100,0.8);
+    border-radius: 5px;
+    cursor: pointer;
+}
+#usernameSign, #passwordSign{
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+    width: 30%;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,.15);
+}
+#signUpBtn{
+    display: block;
+    margin: 20px auto;
+    width: 30%;
+    padding: 10px 20px;
+    background-color: rgba(255,255,255,1);
+    border: 1px solid rgba(0,0,0,.15);
+    color: rgba(100,100,100,0.8);
+    border-radius: 5px;
+    cursor: pointer;
+}
+#rebirthBtnToRebirth{
+    margin-top: 30px;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    color: green;
+    text-align: center;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    
+    border: 6px solid darkgreen;
+    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-radius: 14px;
+    background-image: image-set("./assets/rock.jpg");
+    transition: transform 0.2s ease-out;
+}
+#rebirthBtnToRebirth:hover{
+    margin-top: 30px;
+    text-align: center;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    border-radius: 14px;
+    transform: translateX(5px) translateY(-10px);
+    box-shadow: 4px 4px 10px rgba(0,0,0,.15), -4px -4px 10px rgba(37, 255, 30, 0.6);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+#bossArena{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 100000;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+#bossArenaMain{
+    position: fixed;
+    top: 25%;
+    left: 25%;
+    width: 50%;
+    height: 50%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100001;
+    background-color: rgb(0, 0, 0);   
+    color: white;
+}
+#arenaBtn{
+    position: fixed;
+    top: 0px;
+    left: 125px;
+    background-image: url("./assets/rock.jpg");
+    border: none;
+    color: green;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 100001;
+    height: 11%;
+}
+#character{
+  color: white;
+  position: fixed;
+  top:60%;
+  right:73.5%;
+  font-size: 200%;
+  display: none;
+  z-index: 100002;
+}
+#skill1{
+  position:fixed;
+  top: 70%;
+  right: 48%;
+  width: 45px;
+  height: 45px;
+  background-color: maroon;
+  cursor: pointer;
+  border-radius: 5%;
+  z-index: 10001;
+}
+#skill2{
+  position:fixed;
+  top: 65%;
+  right: 42%;
+  width: 45px;
+  height: 45px;
+  background-color: maroon;
+  cursor: pointer;
+  border-radius: 5%;
+  z-index: 10001;
+}
+#skill3{
+  position:fixed;
+  top: 65%;
+  right: 55%;
+  width: 45px;
+  height: 45px;
+  background-color: maroon;
+  cursor: pointer;
+  border-radius: 5%;
+  z-index: 10001;
+}
+
+
+
+#skill4{
+  position:fixed;
+  top: 60%;
+  right: 60%;
+  width: 45px;
+  height: 45px;
+  background-color: maroon;
+  cursor: pointer;
+  border-radius: 5%;
+  z-index: 10001;
+}
+#rebirthTokensText{
+  position: fixed;
+  top: 5%;
+  right: 80%;
+}
+.skillDesc{
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: -220px;
+    width: 150px;
+    height: 150px;
+    max-width: 200px;
+    color: white;
+    font-style: italic;
+    background-color: rgba(25, 25, 25, 1);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid white;
+    z-index: 100000;
+}
+#paleOil{
+    display: none;
+    margin-top: 30px;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    color: green;
+    text-align: center;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    
+    border: 6px solid darkgreen;
+    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-radius: 14px;
+    background-image: image-set("./assets/rock.jpg");
+    transition: transform 0.2s ease-out;
+}
+#paleOil:hover{
+    margin-top: 30px;
+    text-align: center;
+    padding: 30px;
+    padding-right: 70px;
+    padding-left: 70px;
+    margin-left: 31.5%;
+    max-width: 35%;
+    width: 35%;
+    font-size: 150%;
+    border-radius: 14px;
+    transform: translateX(5px) translateY(-10px);
+    box-shadow: 4px 4px 10px rgba(0,0,0,.15), -4px -4px 10px rgba(37, 255, 30, 0.6);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+#modeForm{
+    position: fixed;
+    top: 15%;
+    left: 0%;
+}
+#backToHome{
+    position: fixed;
+    top: 0px;
+    left: 250px;
+    background-color: rgba(130, 130, 130, 0.2);
+    border: none;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 100001;
+    height: 11%;
+}
+#shank{
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+    
+}
+#shank:hover{
+    cursor: pointer;
+    
+}
+#shankHeader{
+    position: fixed;
+    top: 10px;
+    left: 5%;
+    color: white;
+    z-index: 100002;
+    width: 90%;
+    text-align: center;
+    color: red;
+    pointer-events: none;
+}
