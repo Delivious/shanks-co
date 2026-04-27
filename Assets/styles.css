@@ -252,3 +252,13 @@ a{
   text-align: center;
   font-size: 150%;
 }
+#error{
+  color: red;
+  font-weight: bold;
+  font-size: 150%;
+  position: fixed;
+  width: 30%;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}

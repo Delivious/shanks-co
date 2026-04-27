@@ -39,14 +39,14 @@ app.post("/signup", async (req, res) => {
 
     // Validate email format
     if (!isValidEmail(data.email)) {
-        return res.send('Please provide a valid email address.');
+        return document.getElementById("error").textContent = "Please provide a valid email address.";
     }
 
     // Check if the username already exists in the database
     const existingUser = await collection.findOne({ name: data.name });
 
     if (existingUser) {
-        res.send('User already exists. Please choose a different username.');
+        document.getElementById("error").textContent = "User already exists. Please choose a different username.";
     } else {
         // Hash the password using bcrypt
         const saltRounds = 10; // Number of salt rounds for bcrypt
@@ -56,7 +56,8 @@ app.post("/signup", async (req, res) => {
 
         const userdata = await collection.insertOne(data);
         console.log("User added to database:", userdata);
-        res.send('User registered successfully. Please log in.');
+        document.getElementById("error").textContent = "User registered successfully! Please log in.";
+        document.getElementById("error").style.color = "green";
     }
 
 });
@@ -71,24 +72,24 @@ app.post("/login", async (req, res) => {
 
         const check = await collection.findOne({ name: req.body.username });
         if (!check) {
-            return res.send("User name cannot found")
+            return document.getElementById("error").textContent = "User not found";
         }
         // Compare the hashed password from the database with the plaintext password
         const isPasswordMatch = await bcrypt.compare(req.body.password, check.password);
         if (!isPasswordMatch) {
-            return res.send("wrong Password");
+            return document.getElementById("error").textContent = "Incorrect password";
         }
         // Compare email directly (emails are not hashed)
         const isEmailMatch = req.body.email === check.email;
         if (!isEmailMatch) {
-            return res.send("wrong Email");
+            return document.getElementById("error").textContent = "Incorrect email";
         }
         res.redirect("/index.html");
         console.log("User logged in successfully:", check);
         localStorage.setItem("username", req.body.username);
     }
     catch {
-        res.send("wrong Details");
+        document.getElementById("error").textContent = "An error occurred during login.";
     }
 });
 
