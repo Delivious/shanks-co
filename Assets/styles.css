@@ -2,6 +2,8 @@ body{
   background-color: aliceblue;
 }
 .headDiv{
+  display: flex;
+  flex-direction: row;
   height: 150px;
   width: 100%;
   position: sticky;
@@ -15,12 +17,13 @@ main{
   margin-top: 150px;
 }
 .mainHeader{
-  float: left;
-  width: 60%;
+  display: inline;
+  width: 30%;
   text-align: center;
   font-size: 300%;
 }
 .imgHead{
+  display: inline;
   float: left;
   width: 150px;
   height: 150px;
@@ -30,17 +33,23 @@ main{
   transform: scale(1.1);
 }
 .navList{
+  flex: 1;
   list-style: none;
   text-decoration: none;
 }
 .navList li a{
+  display: inline-block;
   color: aliceblue;
   text-decoration: none;
   padding: 5px;
   transition: transform 0.2s ease-in, 0.2s ease-out;
+  font-size: 120%;
 }
 .navList li{
-  padding: 5px;
+  float: left;
+  padding: 10px;
+  margin: 5px;
+  margin-top: 40px;
 }
 .navList li a:hover{
   background-color: aliceblue;
@@ -159,26 +168,27 @@ main{
   cursor: pointer;
 }
 .logIn, .signUp{
-  transform: translateY(-120px);
-  float: right;
+  float: left;
   color: aliceblue;
   background-color: navy;
   width: fit-content;
   height: fit-content;
-  font-size: 150%;
+  font-size: 100%;
   cursor: pointer;
   z-index: 1001;
   padding: 10px;
   margin: 10px;
   border: none;
   border-radius: 5px;
+  transform: translateY(-30px);
   transition: transform 0.2s ease-in, 0.2s ease-out;
 }
 .logIn:hover, .signUp:hover{
   background-color: blue;
   color: white;
-  transform: scale(1.1) translateY(-120px)
+  transform: scale(1.1) translateY(-30px);
 }
+
 .logInForm, #signUpForm{
   margin: 10px;
   display: flex;
@@ -221,22 +231,7 @@ main{
   color: red;
   font-weight: bold;
 }
-#silkDiv{
-  text-align: center;
-  font-size: 150%;
-  background-color: rgb(40, 40, 40);
-  color: aliceblue;
-  width: fit-content;
-  padding: 10px;
-  margin: 10px auto;
-  border-radius: 5px;
-  text-decoration: none;
-}
-#silkDiv:hover{
-  background-color: navy;
-  color: white;
-  cursor: pointer;
-}
+
 a{
   text-decoration: none;
 }
@@ -261,4 +256,46 @@ a{
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
+}
+.row{
+  display: flex;
+}
+.container {
+  flex: 1;
+  position: relative;
+  width: 450px;
+  height: 450px;
+}
+
+.gameDiv {
+  position: relative;
+  width: 450px;
+  height: 450px;
+  background-color: rgba(40, 40, 40, 0.8);
+  border-radius: 20px;
+  transition: transform 0.3s ease-in, 0.3s ease-out;
+  z-index: 2;
+  text-align: center;
+  text-decoration: none;
+  color: white;
+}
+
+.gameImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 450px;
+  height: 450px;
+  border-radius: 20px;
+  transition: transform 0.3s ease-in, 0.3s ease-out;
+  z-index: 1;
+}
+
+.container:hover .gameImage {
+  transform: scale(1.1);
+}
+
+.gameDiv:hover {
+  transform: scale(1.1);
+  background-color: rgba(40, 40, 40, 0.4);
 }
