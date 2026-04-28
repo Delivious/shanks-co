@@ -1,7 +1,6 @@
 //variables
 const rebirthBtnToRebirth = document.querySelector("#rebirthBtnToRebirth")
 const skill1 = document.querySelector("#skill1")
-const bossBody = document.createElement("img")
 const skill2 = document.querySelector("#skill2")
 const skill3 = document.querySelector("#skill3")
 const skill4 = document.querySelector("#skill4")
@@ -25,10 +24,7 @@ const upg8Desc=document.querySelector("#upg8Desc")
 const upg9Desc=document.querySelector("#upg9Desc")
 const upg10Desc=document.querySelector("#upg10Desc")
 const upg11Desc=document.querySelector("#upg11Desc")
-const bossArenaMain = document.querySelector("#bossArenaMain")
 const upgradeContainer=document.querySelector("#upgradeContainer")
-const bossArena = document.querySelector("#bossArena")
-const arenaBtn = document.querySelector("#arenaBtn")
 const threefoldBtn=document.querySelector("#threefold")
 const upg2 = document.querySelector("#upg2")
 const upg1 = document.getElementById("upg1");
@@ -389,7 +385,7 @@ function formatNumber(num) {
   return mantissa.toFixed(2) + "e" + exponent;
 }
 let rpsPrevious = 0
-const arenaRect = bossArenaMain.getBoundingClientRect()
+
 const maxX = arenaRect.right 
 const minX = arenaRect.left
 //rebirth function to reset stats for a boost
