@@ -545,6 +545,13 @@ arenaBtn.addEventListener("click", ()=>{
     bossBody.style.display = "none"
     clearInterval(move)
   }
+  else if (display == "block"){
+    bossArena.style.display = "none"
+    bossArenaMain.style.display = "none"
+    character.style.display = "none"
+    bossBody.style.display = "none"
+    clearInterval(move)
+  }
 })
 //displays the rebirth menu
 rebirthBtn.addEventListener("click", () => {
