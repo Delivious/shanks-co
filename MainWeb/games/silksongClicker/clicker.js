@@ -386,8 +386,7 @@ function formatNumber(num) {
 }
 let rpsPrevious = 0
 
-const maxX = arenaRect.right 
-const minX = arenaRect.left
+
 //rebirth function to reset stats for a boost
 function rebirth(){
   if(roseValue >= rebirthCost){
