@@ -4,7 +4,7 @@ body{
 .headDiv{
   display: flex;
   flex-direction: row;
-  height: 150px;
+  height: 100px;
   width: 100%;
   position: sticky;
   top: 0;
@@ -18,15 +18,14 @@ main{
 }
 .mainHeader{
   display: inline;
-  width: 30%;
-  text-align: center;
-  font-size: 300%;
+  width: 12.5%;
+  font-size: 200%;
 }
 .imgHead{
   display: inline;
   float: left;
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   transition: transform 0.2s ease-in, 0.2s ease-out;
 }
 .imgHead:hover{
@@ -37,7 +36,7 @@ main{
   list-style: none;
   text-decoration: none;
 }
-.navList li a{
+.navList li .a{
   display: inline-block;
   color: aliceblue;
   text-decoration: none;
@@ -48,10 +47,9 @@ main{
 .navList li{
   float: left;
   padding: 10px;
-  margin: 5px;
-  margin-top: 40px;
+  margin-top: 20px;
 }
-.navList li a:hover{
+.navList li .a:hover{
   background-color: aliceblue;
   color: rgb(40, 40, 40);
   
@@ -177,16 +175,15 @@ main{
   cursor: pointer;
   z-index: 1001;
   padding: 10px;
-  margin: 10px;
   border: none;
   border-radius: 5px;
-  transform: translateY(-30px);
+  transform: translateY(-10px);
   transition: transform 0.2s ease-in, 0.2s ease-out;
 }
 .logIn:hover, .signUp:hover{
   background-color: blue;
   color: white;
-  transform: scale(1.1) translateY(-30px);
+  transform: scale(1.1) translateY(-10px);
 }
 
 .logInForm, #signUpForm{
@@ -297,4 +294,33 @@ a{
 .gameDiv:hover {
   transform: scale(1.1);
   background-color: rgba(40, 40, 40, 0.4);
+}
+@media screen and (max-width: 960px) {
+  .logIn{
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    text-align: center;
+  }
+  .signUp{
+    position: fixed;
+    bottom: 10px;
+    right: 100px;
+    text-align: center;
+  }
+}
+@media screen and (max-width: 750px) {
+  .logIn{
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    text-align: center;
+  }
+  .signUp{
+    position: fixed;
+    bottom: 10px;
+    right: 100px;
+    text-align: center;
+  }
+  
 }
