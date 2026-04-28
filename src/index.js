@@ -1,3 +1,12 @@
+import { verifyEmail } from '@emailcheck/email-validator-js';
+
+// Basic usage
+const result = await verifyEmail({
+  emailAddress: 'user@mydomain.com',
+  verifyMx: true,
+  verifySmtp: true,
+  timeout: 3000
+});
 const express = require("express");
 const path = require("path");
 const collection = require("./config");
@@ -23,9 +32,19 @@ app.get("/signup", (req, res) => {
 });
 
 // Email validation function
-function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+async function isValidEmail(email) {
+    try {
+        const result = await verifyEmail({
+            emailAddress: email,
+            verifyMx: true,
+            verifySmtp: true,
+            timeout: 3000
+        });
+
+        return result.valid; // true or false
+    } catch (err) {
+        return false;
+    }
 }
 
 // Register User
@@ -65,7 +84,7 @@ app.post("/signup", async (req, res) => {
 app.post("/login", async (req, res) => {
     try {
         // Validate email format
-        if (!isValidEmail(req.body.email)) {
+        if (!(await isValidEmail(req.body.email))) {
             return res.send('Please provide a valid email address.');
         }
 
@@ -98,8 +117,13 @@ app.post("/verify-email", async (req, res) => {
         const { username, email } = req.body;
 
         // Validate email format
-        if (!isValidEmail(email)) {
+        if (!(await isValidEmail(email))) {
             return res.json({ valid: false, message: 'Invalid email format.' });
+        }
+        const existingEmail = await collection.findOne({ email: data.email });
+
+        if (existingEmail) {
+            return res.send('Email already in use.');
         }
 
         // Find user in database
@@ -120,15 +144,6 @@ app.post("/verify-email", async (req, res) => {
     }
 });
 
-// Debug endpoint: View all users (remove this in production!)
-app.get("/debug/users", async (req, res) => {
-    try {
-        const users = await collection.find({});
-        res.json(users);
-    } catch (error) {
-        res.json({ error: error.message });
-    }
-});
 
 // Define Port for Application
 const port = process.env.PORT || 5000;
