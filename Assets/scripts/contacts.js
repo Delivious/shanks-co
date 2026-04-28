@@ -76,7 +76,7 @@ function setupContactForm() {
         // Verify email matches account email
         try {
             console.log("Verifying email with server...");
-            const response = await fetch('https://shanks-co.onrender.com/verify-email', {
+            const response = await fetch('https://shanksco.org/verify-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
