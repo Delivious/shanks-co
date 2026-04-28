@@ -255,12 +255,14 @@ a{
 }
 .row{
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 .container {
   flex: 1;
   position: relative;
   display: inline-block;
-  width: 250px;
+  width: 100%;
   height: 250px;
   margin-left: 5%;
 }
