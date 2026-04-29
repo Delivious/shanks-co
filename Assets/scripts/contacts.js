@@ -10,6 +10,25 @@ function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+// ================= CHECK IF USER IS VERIFIED (NEW) =================
+async function isUserVerified(username) {
+    try {
+        const res = await fetch("https://shanksco.org/check-verified", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username })
+        });
+
+        const data = await res.json();
+        return data.verified;
+    } catch (err) {
+        console.error("Verification check failed:", err);
+        return false;
+    }
+}
+
 console.log("contact.js loaded");
 
 let formInitialized = false;
@@ -54,9 +73,17 @@ function setupContactForm() {
             return;
         }
 
-        // check login (frontend only)
+        // ================= LOGIN CHECK =================
         if (localStorage.getItem("username") !== username) {
             alert("You must be logged in.");
+            return;
+        }
+
+        // ================= NEW: VERIFY USER IS ACTUALLY VERIFIED =================
+        const verified = await isUserVerified(username);
+
+        if (!verified) {
+            alert("You must verify your email before sending messages.");
             return;
         }
 
@@ -92,22 +119,21 @@ function setupContactForm() {
             const verificationLink = `https://shanksco.org/verify?token=${token}`;
 
             // ================= EMAILJS SEND =================
-            emailjs
-                .send(serviceID, templateID, {
-                    name: templateParams.name,
-                    email: templateParams.email,
-                    message: templateParams.message,
-                    title: templateParams.title,
-                    verification_link: verificationLink
-                })
-                .then(() => {
-                    alert("Message sent successfully!");
-                    form.reset();
-                })
-                .catch((error) => {
-                    console.error("EmailJS error:", error);
-                    alert("Failed to send email.");
-                });
+            emailjs.send(serviceID, templateID, {
+                name: templateParams.name,
+                email: templateParams.email,
+                message: templateParams.message,
+                title: templateParams.title,
+                verification_link: verificationLink
+            })
+            .then(() => {
+                alert("Message sent successfully!");
+                form.reset();
+            })
+            .catch((error) => {
+                console.error("EmailJS error:", error);
+                alert("Failed to send email.");
+            });
 
         } catch (error) {
             console.error("Verification error:", error);

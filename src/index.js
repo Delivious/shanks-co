@@ -167,16 +167,20 @@ app.get("/verify", async (req, res) => {
 
   res.send("Email verified successfully! You can now log in.");
 });
-
-// ================= DEBUG =================
-app.get("/debug/users", async (req, res) => {
-  const users = await collection.find({}).toArray();
-  res.json(users);
-});
-
 // ================= SERVER =================
 const port = process.env.PORT || 5000;
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+});
+app.post("/check-verified", async (req, res) => {
+  const { username } = req.body;
+
+  const user = await collection.findOne({ name: username });
+
+  if (!user) {
+    return res.json({ verified: false });
+  }
+
+  return res.json({ verified: user.verified });
 });
