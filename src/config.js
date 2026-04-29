@@ -18,13 +18,13 @@ MongoClient.connect(connectionString, { useNewUrlParser: true, useUnifiedTopolog
   });
 
 // Schema
-const Loginschema = new mongoose.Schema({
+const Loginschema = new MongoClient.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true }
 });
 
 // Collection
-const collection = mongoose.model("users", Loginschema);
+const collection = MongoClient.model("users", Loginschema);
 
 export default collection;
