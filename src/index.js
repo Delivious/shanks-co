@@ -1,5 +1,9 @@
 import { verifyEmail } from '@emailcheck/email-validator-js';
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 // Basic usage
 const result = await verifyEmail({
   emailAddress: 'user@mydomain.com',
@@ -7,10 +11,10 @@ const result = await verifyEmail({
   verifySmtp: true,
   timeout: 3000
 });
-const express = require("express");
-const path = require("path");
-const collection = require("./config");
-const bcrypt = require('bcrypt');
+import express from "express";
+import path from "path";
+import bcrypt from "bcrypt";
+import collection from "./config.js";
 
 const app = express();
 // convert data into json format
