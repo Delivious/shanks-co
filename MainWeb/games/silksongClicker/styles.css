@@ -721,3 +721,20 @@
     color: red;
     pointer-events: none;
 }
+#verifyMain {
+    margin: 0;
+    font-family: Arial;
+    background: #111;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.box {
+    background: #222;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+}
