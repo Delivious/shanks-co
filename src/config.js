@@ -1,5 +1,5 @@
-require("dotenv").config();
-const mongoose = require("mongoose");
+import dotenv from "dotenv";
+import { MongoClient } from "mongodb";
 
 // Build URI safely
 const connectionString =
@@ -8,8 +8,7 @@ const connectionString =
 
 console.log("Connecting to MongoDB Atlas...");
 
-mongoose
-  .connect(connectionString)
+MongoClient.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log("Database Connected Successfully");
   })
