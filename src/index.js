@@ -1,156 +1,182 @@
-import { verifyEmail } from '@emailcheck/email-validator-js';
-import { fileURLToPath } from "url";
-import { dirname } from "path";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-// Basic usage
-const result = await verifyEmail({
-  emailAddress: 'user@mydomain.com',
-  verifyMx: true,
-  verifySmtp: true,
-  timeout: 3000
-});
 import express from "express";
 import path from "path";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import collection from "./config.js";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
 const app = express();
-// convert data into json format
+
+// __dirname fix
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Middleware
 app.use(express.json());
-// Static file - serve from parent directory
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "..")));
 
-app.use(express.urlencoded({ extended: false }));
-//use EJS as the view engine
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "..", "views"));
+// Email validation
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
+// ================= ROUTES =================
 app.get("/", (req, res) => {
-    res.redirect("/MainWeb/LoginPages/logIn.html");
+  res.redirect("/MainWeb/LoginPages/logIn.html");
 });
 
 app.get("/signup", (req, res) => {
-    res.redirect("/MainWeb/LoginPages/signUp.html");
+  res.redirect("/MainWeb/LoginPages/signUp.html");
 });
 
-// Email validation function
-async function isValidEmail(email) {
-    try {
-        const result = await verifyEmail({
-            emailAddress: email,
-            verifyMx: true,
-            verifySmtp: true,
-            timeout: 3000
-        });
-
-        return result.valid; // true or false
-    } catch (err) {
-        return false;
-    }
-}
-
-// Register User
+// ================= SIGNUP =================
 app.post("/signup", async (req, res) => {
+  const { username, password, email } = req.body;
 
-    const data = {
-        name: req.body.username,
-        password: req.body.password,
-        email: req.body.email
-    }
+  // Validate email format
+  if (!isValidEmail(email)) {
+    return res.json({
+      success: false,
+      message: "Invalid email format"
+    });
+  }
 
-    // Validate email format
-    if (!isValidEmail(data.email)) {
-        return res.send('Please provide a valid email address.');
-    }
+  // Check username
+  const existingUser = await collection.findOne({ name: username });
+  if (existingUser) {
+    return res.json({
+      success: false,
+      message: "Username already exists"
+    });
+  }
 
-    // Check if the username already exists in the database
-    const existingUser = await collection.findOne({ name: data.name });
+  // Check email
+  const existingEmail = await collection.findOne({ email });
+  if (existingEmail) {
+    return res.json({
+      success: false,
+      message: "Email already in use"
+    });
+  }
 
-    if (existingUser) {
-        res.send('User already exists. Please choose a different username.');
-    } else {
-        // Hash the password using bcrypt
-        const saltRounds = 10; // Number of salt rounds for bcrypt
-        const hashedPassword = await bcrypt.hash(data.password, saltRounds);
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-        data.password = hashedPassword; // Replace the original password with the hashed one
+  // Generate verification token
+  const token = crypto.randomBytes(32).toString("hex");
 
-        const userdata = await collection.insertOne(data);
-        console.log("User added to database:", userdata);
-        res.send('User registered successfully. Please log in.');
-    }
+  // Expiration (15 minutes)
+  const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
+  // Save user
+  await collection.insertOne({
+    name: username,
+    email,
+    password: hashedPassword,
+    verificationToken: token,
+    tokenExpiresAt,
+    verified: false,
+    createdAt: new Date()
+  });
+
+  // ✅ RETURN CLEAN RESPONSE
+  return res.json({
+    success: true,
+    email,
+    token
+  });
 });
 
-// Login user 
+// ================= LOGIN =================
 app.post("/login", async (req, res) => {
-    try {
-        // Validate email format
-        if (!(await isValidEmail(req.body.email))) {
-            return res.send('Please provide a valid email address.');
-        }
+  const { username, password, email } = req.body;
 
-        const check = await collection.findOne({ name: req.body.username });
-        if (!check) {
-            return res.send("User name cannot found")
-        }
-        // Compare the hashed password from the database with the plaintext password
-        const isPasswordMatch = await bcrypt.compare(req.body.password, check.password);
-        if (!isPasswordMatch) {
-            return res.send("wrong Password");
-        }
-        // Compare email directly (emails are not hashed)
-        const isEmailMatch = req.body.email === check.email;
-        if (!isEmailMatch) {
-            return res.send("wrong Email");
-        }
-        res.redirect("/index.html");
-        console.log("User logged in successfully:", check);
-        localStorage.setItem("username", req.body.username);
-    }
-    catch {
-        res.send("wrong Details");
-    }
+  const user = await collection.findOne({ name: username });
+
+  if (!user) return res.send("User not found");
+
+  // 🚫 BLOCK UNVERIFIED USERS
+  if (!user.verified) {
+    return res.send("Please verify your email before logging in.");
+  }
+
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.send("Wrong password");
+
+  if (user.email !== email) return res.send("Wrong email");
+
+  res.redirect("/index.html");
 });
 
-// Verify email matches account for contact form
+// ================= VERIFY EMAIL (backend check) =================
 app.post("/verify-email", async (req, res) => {
-    try {
-        const { username, email } = req.body;
+  const { username, email } = req.body;
 
-        // Validate email format
-        if (!(await isValidEmail(email))) {
-            return res.json({ valid: false, message: 'Invalid email format.' });
-        }
-        const existingEmail = await collection.findOne({ email: data.email });
+  const user = await collection.findOne({ name: username });
 
-        if (existingEmail) {
-            return res.send('Email already in use.');
-        }
+  if (!user) {
+    return res.json({ valid: false, message: "User not found" });
+  }
 
-        // Find user in database
-        const user = await collection.findOne({ name: username });
-        if (!user) {
-            return res.json({ valid: false, message: 'User not found.' });
-        }
+  if (user.verified) {
+    return res.json({ valid: true, message: "Already verified" });
+  }
 
-        // Check if email matches
-        if (user.email === email) {
-            return res.json({ valid: true, message: 'Email verified.' });
-        } else {
-            return res.json({ valid: false, message: 'Email does not match account email.' });
-        }
-    }
-    catch (error) {
-        res.json({ valid: false, message: 'An error occurred during verification.' });
-    }
+  // ⏰ EXPIRED TOKEN CHECK
+  if (user.tokenExpiresAt && new Date() > new Date(user.tokenExpiresAt)) {
+    return res.json({
+      valid: false,
+      message: "Verification expired. Please sign up again."
+    });
+  }
+
+  if (user.email !== email) {
+    return res.json({ valid: false, message: "Email mismatch" });
+  }
+
+  return res.json({ valid: true, message: "Email verified" });
 });
 
+// ================= ACTUAL TOKEN VERIFICATION =================
+app.get("/verify", async (req, res) => {
+  const { token } = req.query;
 
-// Define Port for Application
+  const user = await collection.findOne({ verificationToken: token });
+
+  if (!user) {
+    return res.send("Invalid token");
+  }
+
+  // ⏰ EXPIRED CHECK
+  if (user.tokenExpiresAt && new Date() > new Date(user.tokenExpiresAt)) {
+    return res.send("This verification link has expired. Please register again.");
+  }
+
+  await collection.updateOne(
+    { _id: user._id },
+    {
+      $set: { verified: true },
+      $unset: {
+        verificationToken: "",
+        tokenExpiresAt: ""
+      }
+    }
+  );
+
+  res.send("Email verified successfully! You can now log in.");
+});
+
+// ================= DEBUG =================
+app.get("/debug/users", async (req, res) => {
+  const users = await collection.find({}).toArray();
+  res.json(users);
+});
+
+// ================= SERVER =================
 const port = process.env.PORT || 5000;
+
 app.listen(port, () => {
-    console.log(`Server listening on port ${port}`)
+  console.log(`Server running on port ${port}`);
 });
