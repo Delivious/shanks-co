@@ -11,17 +11,23 @@ const client = new MongoClient(uri);
 
 let collection;
 
-try {
-  console.log("Connecting to MongoDB Atlas...");
-  await client.connect();
+async function connectDB() {
+  try {
+    console.log("Connecting to MongoDB Atlas...");
 
-  const db = client.db("shanks-co"); // your DB name
-  collection = db.collection("users");
+    await client.connect();
 
-  console.log("Database Connected Successfully");
-} catch (error) {
-  console.error("Database Connection Failed");
-  console.error(error.message);
+    const db = client.db("shanks-co");
+    collection = db.collection("users");
+
+    console.log("Database Connected Successfully");
+  } catch (error) {
+    console.error("Database Connection Failed:");
+    console.error(error); // 🔥 shows FULL error (important)
+    process.exit(1); // stop app cleanly
+  }
 }
 
-export default collection;
+await connectDB();
+
+export default () => collection;
