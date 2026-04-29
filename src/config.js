@@ -1,30 +1,27 @@
 import dotenv from "dotenv";
 import { MongoClient } from "mongodb";
 
-// Build URI safely
-const connectionString =
+dotenv.config();
+
+const uri =
   process.env.MONGODB_URI ||
-  `mongodb+srv://masoncosta31210_db_user:${encodeURIComponent(process.env.pass)}@shanksco.ckbmk3t.mongodb.net/shanks-co?retryWrites=true&w=majority`;
+  `mongodb+srv://masoncosta31210_db_user:${encodeURIComponent(process.env.pass)}@shanksco.ckbmk3t.mongodb.net/?retryWrites=true&w=majority`;
 
-console.log("Connecting to MongoDB Atlas...");
+const client = new MongoClient(uri);
 
-MongoClient.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    console.log("Database Connected Successfully");
-  })
-  .catch((error) => {
-    console.error("Database Connection Failed");
-    console.error(error.message);
-  });
+let collection;
 
-// Schema
-const Loginschema = new MongoClient.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true },
-  password: { type: String, required: true }
-});
+try {
+  console.log("Connecting to MongoDB Atlas...");
+  await client.connect();
 
-// Collection
-const collection = MongoClient.model("users", Loginschema);
+  const db = client.db("shanks-co"); // your DB name
+  collection = db.collection("users");
+
+  console.log("Database Connected Successfully");
+} catch (error) {
+  console.error("Database Connection Failed");
+  console.error(error.message);
+}
 
 export default collection;
