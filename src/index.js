@@ -66,17 +66,25 @@ app.post("/signup", async (req, res) => {
   // SEND EMAIL
   const link = `https://shanksco.org/verify?token=${token}`;
 
+  try {
   await transporter.sendMail({
     from: `"Shank's Co" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Verify your email",
     html: `
       <h2>Verify your account</h2>
-      <p>Click below:</p>
       <a href="${link}">Verify Email</a>
-      <p>This link expires in 15 minutes.</p>
     `
   });
+
+  console.log("Email sent successfully");
+} catch (err) {
+  console.error("Email failed:", err);
+  return res.json({
+    success: false,
+    message: "Email failed to send"
+  });
+}
 
   return res.json({
     success: true,
