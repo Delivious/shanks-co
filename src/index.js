@@ -110,7 +110,7 @@ app.post("/login", async (req, res) => {
   if (user.email !== email) {
     return res.redirect("/MainWeb/LoginPages/badEmail.html");
   }
-
+  localStorage.setItem("verified", user.verified);
   return res.redirect("/index.html");
 });
 
@@ -144,7 +144,7 @@ app.post("/check-verified", async (req, res) => {
   const user = await collection.findOne({ name: username });
 
   if (!user) return res.redirect("/MainWeb/LoginPages/notFound.html");
-
+  localStorage.setItem("verified", user.verified);
   return user.verified ? res.redirect("/index.html") : res.redirect("/MainWeb/LoginPages/notVerified.html");
 });
 
