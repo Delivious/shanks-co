@@ -98,21 +98,20 @@ app.post("/login", async (req, res) => {
 
   const user = await collection.findOne({ name: username });
 
-  if (!user) return window.location.href = "/MainWeb/LoginPages/notVerified.html";
+  if (!user) return res.json({ success: false, message: "User not found" });
 
   if (!user.verified) {
-    return window.location.href = "/MainWeb/LoginPages/notVerified.html";
+    return res.json({ success: false, message: "Email not verified" });
   }
 
   const match = await bcrypt.compare(password, user.password);
-  if (!match) return window.location.href = "/MainWeb/LoginPages/notVerified.html";
+  if (!match) return res.json({ success: false, message: "Wrong password" });
 
   if (user.email !== email) {
-    
-    return window.location.href = "/MainWeb/LoginPages/notVerified.html";
+    return res.json({ success: false, message: "Wrong email" });
   }
 
-  return window.location.href = "/MainWeb/LoginPages/verifiedPage.html";
+  return res.json({ success: true });
 });
 
 // ================= VERIFY LINK =================
@@ -121,12 +120,10 @@ app.get("/verify", async (req, res) => {
 
   const user = await collection.findOne({ verificationToken: token });
 
-  if (!user){
-    return window.location.href = "/MainWeb/LoginPages/notVerified.html";
-  } 
+  if (!user) return res.send("Invalid token");
 
   if (new Date() > new Date(user.tokenExpiresAt)) {
-    return window.location.href = "/MainWeb/LoginPages/notVerified.html";
+    return res.send("Token expired. Please sign up again.");
   }
 
   await collection.updateOne(
@@ -136,7 +133,7 @@ app.get("/verify", async (req, res) => {
       $unset: { verificationToken: "", tokenExpiresAt: "" }
     }
   );
-
+  
   res.send("Email verified successfully. You can now log in.");
 });
 
@@ -146,9 +143,9 @@ app.post("/check-verified", async (req, res) => {
 
   const user = await collection.findOne({ name: username });
 
-  if (!user) return window.location.href = "/MainWeb/LoginPages/notVerified.html";
+  if (!user) return res.json({ verified: false });
 
-  return window.location.href = "/MainWeb/LoginPages/verifiedPage.html";
+  return res.json({ verified: user.verified });
 });
 
 // ================= SERVER =================
