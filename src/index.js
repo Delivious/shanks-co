@@ -76,6 +76,8 @@ app.post("/signup", async (req, res) => {
       <a href="${link}">Verify Email</a>
     `
   });
+  console.log("EMAIL_USER:", process.env.EMAIL_USER);
+  console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
 
   console.log("Email sent successfully");
 } catch (err) {
