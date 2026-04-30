@@ -77,7 +77,7 @@ app.post("/signup", async (req, res) => {
   });
 
   // SEND EMAIL
-  const link = `https://shanks-co.onrender.com/verify?token=${token}`;
+  const link = `https://shanksco.org/verify?token=${token}`;
 
   try {
   await transporter.sendMail({
