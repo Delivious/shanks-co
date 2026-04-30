@@ -32,17 +32,17 @@ app.post("/signup", async (req, res) => {
   const { username, password, email } = req.body;
 
   if (!isValidEmail(email)) {
-    return res.json({ success: false, message: "Invalid email" });
+    return res.redirect("/MainWeb/LoginPages/invalidEmail.html");
   }
 
   const existingUser = await collection.findOne({ name: username });
   if (existingUser) {
-    return res.json({ success: false, message: "Username exists" });
+    return res.redirect("/MainWeb/LoginPages/existingUsername.html");
   }
 
   const existingEmail = await collection.findOne({ email });
   if (existingEmail) {
-    return res.json({ success: false, message: "Email exists" });
+    return res.redirect("/MainWeb/LoginPages/existingEmail.html");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -98,20 +98,20 @@ app.post("/login", async (req, res) => {
 
   const user = await collection.findOne({ name: username });
 
-  if (!user) return res.json({ success: false, message: "User not found" });
+  if (!user) return res.redirect("/MainWeb/LoginPages/notFound.html");
 
   if (!user.verified) {
-    return res.json({ success: false, message: "Email not verified" });
+    return res.redirect("/MainWeb/LoginPages/notVerified.html");
   }
 
   const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.json({ success: false, message: "Wrong password" });
+  if (!match) return res.redirect("/MainWeb/LoginPages/badPassword.html");
 
   if (user.email !== email) {
-    return res.json({ success: false, message: "Wrong email" });
+    return res.redirect("/MainWeb/LoginPages/badEmail.html");
   }
 
-  return res.json({ success: true });
+  return res.redirect("/index.html");
 });
 
 // ================= VERIFY LINK =================
@@ -143,9 +143,9 @@ app.post("/check-verified", async (req, res) => {
 
   const user = await collection.findOne({ name: username });
 
-  if (!user) return res.json({ verified: false });
+  if (!user) return res.redirect("/MainWeb/LoginPages/notFound.html");
 
-  return res.json({ verified: user.verified });
+  return user.verified ? res.redirect("/index.html") : res.redirect("/MainWeb/LoginPages/notVerified.html");
 });
 
 // ================= SERVER =================
