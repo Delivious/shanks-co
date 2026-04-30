@@ -2,53 +2,31 @@ import express from "express";
 import path from "path";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+import { Resend } from "resend";
 import collection from "./config.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import cors from "cors";
-import dns from "dns";
-dns.setDefaultResultOrder("ipv4first");
+
+dotenv.config();
+
 const app = express();
-app.use(cors({
-  origin: "https://shanksco.org",
-  methods: ["GET", "POST"],
-  credentials: true
-}));
-// __dirname fix
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "..")));
 
-// email validation
+// ================= RESEND SETUP =================
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// ================= EMAIL VALIDATION =================
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// email transporter
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  family: 4
-});
-transporter.verify((err, success) => {
-  if (err) {
-    console.error("SMTP ERROR:", err);
-  } else {
-    console.log("SMTP READY");
-  }
-});
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
 // ================= SIGNUP =================
 app.post("/signup", async (req, res) => {
   const { username, password, email } = req.body;
@@ -68,6 +46,7 @@ app.post("/signup", async (req, res) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
+
   const token = crypto.randomBytes(32).toString("hex");
   const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
@@ -80,33 +59,31 @@ app.post("/signup", async (req, res) => {
     verified: false
   });
 
-  // SEND EMAIL
   const link = `https://shanksco.org/verify?token=${token}`;
 
   try {
-  await transporter.sendMail({
-    from: `"Shank's Co" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: "Verify your email",
-    html: `
-      <h2>Verify your account</h2>
-      <a href="${link}">Verify Email</a>
-    `
-  });
-  
+    const result = await resend.emails.send({
+      from: "Shank's Co <onboarding@resend.dev>",
+      to: email,
+      subject: "Verify your email",
+      html: `
+        <h2>Verify Your Account</h2>
+        <p>Click below to verify:</p>
+        <a href="${link}">${link}</a>
+        <p>This link expires in 15 minutes.</p>
+      `
+    });
 
-  console.log("Email sent successfully");
-}catch (err) {
-  console.error("❌ EMAIL ERROR FULL:", err);
-  console.error("CODE:", err.code);
-  console.error("RESPONSE:", err.response);
-  console.error("COMMAND:", err.command);
+    console.log("Email sent:", result);
 
-  return res.json({
-    success: false,
-    message: `Email failed to send: ${err.message}`
-  });
-}
+  } catch (err) {
+    console.error("EMAIL FAILED:", err);
+
+    return res.json({
+      success: false,
+      message: "Email failed to send"
+    });
+  }
 
   return res.json({
     success: true,
@@ -122,11 +99,9 @@ app.post("/login", async (req, res) => {
   const user = await collection.findOne({ name: username });
 
   if (!user) return res.json({ success: false, message: "User not found" });
+
   if (!user.verified) {
-    return res.json({
-      success: false,
-      message: "Email not verified"
-    });
+    return res.json({ success: false, message: "Email not verified" });
   }
 
   const match = await bcrypt.compare(password, user.password);
@@ -139,7 +114,7 @@ app.post("/login", async (req, res) => {
   return res.json({ success: true });
 });
 
-// ================= VERIFY PAGE LINK =================
+// ================= VERIFY LINK =================
 app.get("/verify", async (req, res) => {
   const { token } = req.query;
 
@@ -159,7 +134,7 @@ app.get("/verify", async (req, res) => {
     }
   );
 
-  res.send("Email verified successfully! You can now log in.");
+  res.send("Email verified successfully. You can now log in.");
 });
 
 // ================= CHECK VERIFIED =================
