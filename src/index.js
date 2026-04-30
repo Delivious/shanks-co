@@ -112,7 +112,7 @@ app.post("/login", async (req, res) => {
     return window.location.href = "/MainWeb/LoginPages/notVerified.html";
   }
 
-  return res.json({ success: true });
+  return window.location.href = "/MainWeb/LoginPages/notVerified.html";
 });
 
 // ================= VERIFY LINK =================
