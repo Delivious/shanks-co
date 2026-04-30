@@ -6,9 +6,14 @@ import nodemailer from "nodemailer";
 import collection from "./config.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import cors from "cors";
 
 const app = express();
-
+app.use(cors({
+  origin: "https://shanksco.org",
+  methods: ["GET", "POST"],
+  credentials: true
+}));
 // __dirname fix
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

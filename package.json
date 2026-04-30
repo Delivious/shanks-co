@@ -7,6 +7,7 @@
   "dependencies": {
     "@emailcheck/email-validator-js": "^3.4.3",
     "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "ejs": "^5.0.2",
     "express": "^5.2.1",
