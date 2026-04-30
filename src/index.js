@@ -7,7 +7,8 @@ import collection from "./config.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import cors from "cors";
-
+import dns from "dns";
+dns.setDefaultResultOrder("ipv4first");
 const app = express();
 app.use(cors({
   origin: "https://shanksco.org",
