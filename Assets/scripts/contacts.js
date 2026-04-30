@@ -8,7 +8,7 @@ function isValidEmail(email) {
 }
 
 async function isUserVerified(username) {
-    const res = await fetch("https://shanksco.org/check-verified", {
+    const res = await fetch("https://shanks-co.onrender.com/check-verified", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username })
