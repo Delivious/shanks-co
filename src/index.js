@@ -81,7 +81,7 @@ app.post("/signup", async (req, res) => {
 
   console.log("Email sent successfully");
 } catch (err) {
-  console.error("Email failed:", err);
+  console.log("Email failed:", err);
   return res.json({
     success: false,
     message: "Email failed to send"
