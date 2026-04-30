@@ -6,8 +6,7 @@ import nodemailer from "nodemailer";
 import collection from "./config.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
+
 const app = express();
 
 // __dirname fix
@@ -32,7 +31,15 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS
   }
 });
-
+transporter.verify((err, success) => {
+  if (err) {
+    console.error("SMTP ERROR:", err);
+  } else {
+    console.log("SMTP READY");
+  }
+});
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
 // ================= SIGNUP =================
 app.post("/signup", async (req, res) => {
   const { username, password, email } = req.body;
