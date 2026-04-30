@@ -6,7 +6,8 @@ import nodemailer from "nodemailer";
 import collection from "./config.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
 const app = express();
 
 // __dirname fix
@@ -76,8 +77,7 @@ app.post("/signup", async (req, res) => {
       <a href="${link}">Verify Email</a>
     `
   });
-  console.log("EMAIL_USER:", process.env.EMAIL_USER);
-  console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
+  
 
   console.log("Email sent successfully");
 } catch (err) {
