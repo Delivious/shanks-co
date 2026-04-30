@@ -1,7 +1,7 @@
 
 
 window.onload = function() {
-    if (localStorage.getItem("username")) {
+    if (localStorage.getItem("username") && localStorage.getItem("verified") === "true") {
         const usernameElement = document.createElement("p");
         usernameElement.textContent = localStorage.getItem("username");
         document.body.appendChild(usernameElement);

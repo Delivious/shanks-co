@@ -98,17 +98,18 @@ app.post("/login", async (req, res) => {
 
   const user = await collection.findOne({ name: username });
 
-  if (!user) return res.json({ success: false, message: "User not found" });
+  if (!user) return window.location.href = "/MainWeb/LoginPages/notVerified.html";
 
   if (!user.verified) {
-    return res.json({ success: false, message: "Email not verified" });
+    return window.location.href = "/MainWeb/LoginPages/notVerified.html";
   }
 
   const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.json({ success: false, message: "Wrong password" });
+  if (!match) return window.location.href = "/MainWeb/LoginPages/notVerified.html";
 
   if (user.email !== email) {
-    return res.json({ success: false, message: "Wrong email" });
+    
+    return window.location.href = "/MainWeb/LoginPages/notVerified.html";
   }
 
   return res.json({ success: true });
@@ -120,10 +121,12 @@ app.get("/verify", async (req, res) => {
 
   const user = await collection.findOne({ verificationToken: token });
 
-  if (!user) return res.send("Invalid token");
+  if (!user){
+    return window.location.href = "/MainWeb/LoginPages/notVerified.html";
+  } 
 
   if (new Date() > new Date(user.tokenExpiresAt)) {
-    return res.send("Token expired. Please sign up again.");
+    return window.location.href = "/MainWeb/LoginPages/notVerified.html";
   }
 
   await collection.updateOne(
@@ -143,9 +146,9 @@ app.post("/check-verified", async (req, res) => {
 
   const user = await collection.findOne({ name: username });
 
-  if (!user) return res.json({ verified: false });
+  if (!user) return window.location.href = "/MainWeb/LoginPages/notVerified.html";
 
-  return res.json({ verified: user.verified });
+  return window.location.href = "/MainWeb/LoginPages/verifiedPage.html";
 });
 
 // ================= SERVER =================
