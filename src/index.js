@@ -100,7 +100,7 @@ app.post("/signup", async (req, res) => {
 
   return res.json({
     success: false,
-    message: "Email failed to send"
+    message: `Email failed to send: ${err.message}`
   });
 }
 
