@@ -1,31 +1,26 @@
-require("dotenv").config();
-const mongoose = require("mongoose");
+import dotenv from "dotenv";
+import { MongoClient } from "mongodb";
 
-// Build URI safely
-const connectionString =
-  process.env.MONGODB_URI ||
-  `mongodb+srv://masoncosta31210_db_user:${encodeURIComponent(process.env.pass)}@shanksco.ckbmk3t.mongodb.net/shanks-co?retryWrites=true&w=majority`;
+dotenv.config();
 
-console.log("Connecting to MongoDB Atlas...");
+const uri = process.env.MONGODB_URI;
 
-mongoose
-  .connect(connectionString)
-  .then(() => {
-    console.log("Database Connected Successfully");
-  })
-  .catch((error) => {
-    console.error("Database Connection Failed");
-    console.error(error.message);
-  });
+const client = new MongoClient(uri);
 
-// Schema
-const Loginschema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true },
-  password: { type: String, required: true }
-});
+let collection;
 
-// Collection
-const collection = mongoose.model("users", Loginschema);
+try {
+  console.log("Connecting to MongoDB Atlas...");
+  await client.connect();
 
-module.exports = collection;
+  const db = client.db("shanks-co"); // change if needed
+  collection = db.collection("users");
+
+  console.log("Database Connected Successfully");
+} catch (error) {
+  console.error("Database Connection Failed:");
+  console.error(error);
+  process.exit(1);
+}
+
+export default collection;

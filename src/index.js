@@ -1,137 +1,161 @@
-const express = require("express");
-const path = require("path");
-const collection = require("./config");
-const bcrypt = require('bcrypt');
+import express from "express";
+import path from "path";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
+import collection from "./config.js";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
 const app = express();
-// convert data into json format
+
+// __dirname fix
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// middleware
 app.use(express.json());
-// Static file - serve from parent directory
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "..")));
 
-app.use(express.urlencoded({ extended: false }));
-//use EJS as the view engine
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "..", "views"));
-
-app.get("/", (req, res) => {
-    res.redirect("/MainWeb/LoginPages/logIn.html");
-});
-
-app.get("/signup", (req, res) => {
-    res.redirect("/MainWeb/LoginPages/signUp.html");
-});
-
-// Email validation function
+// email validation
 function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// Register User
+// email transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+// ================= SIGNUP =================
 app.post("/signup", async (req, res) => {
+  const { username, password, email } = req.body;
 
-    const data = {
-        name: req.body.username,
-        password: req.body.password,
-        email: req.body.email
-    }
+  if (!isValidEmail(email)) {
+    return res.json({ success: false, message: "Invalid email" });
+  }
 
-    // Validate email format
-    if (!isValidEmail(data.email)) {
-        return res.send('Please provide a valid email address.');
-    }
+  const existingUser = await collection.findOne({ name: username });
+  if (existingUser) {
+    return res.json({ success: false, message: "Username exists" });
+  }
 
-    // Check if the username already exists in the database
-    const existingUser = await collection.findOne({ name: data.name });
+  const existingEmail = await collection.findOne({ email });
+  if (existingEmail) {
+    return res.json({ success: false, message: "Email exists" });
+  }
 
-    if (existingUser) {
-        res.send('User already exists. Please choose a different username.');
-    } else {
-        // Hash the password using bcrypt
-        const saltRounds = 10; // Number of salt rounds for bcrypt
-        const hashedPassword = await bcrypt.hash(data.password, saltRounds);
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const token = crypto.randomBytes(32).toString("hex");
+  const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-        data.password = hashedPassword; // Replace the original password with the hashed one
+  await collection.insertOne({
+    name: username,
+    email,
+    password: hashedPassword,
+    verificationToken: token,
+    tokenExpiresAt,
+    verified: false
+  });
 
-        const userdata = await collection.insertOne(data);
-        console.log("User added to database:", userdata);
-        res.send('User registered successfully. Please log in.');
-    }
+  // SEND EMAIL
+  const link = `https://shanksco.org/verify?token=${token}`;
 
+  try {
+  await transporter.sendMail({
+    from: `"Shank's Co" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Verify your email",
+    html: `
+      <h2>Verify your account</h2>
+      <a href="${link}">Verify Email</a>
+    `
+  });
+  console.log("EMAIL_USER:", process.env.EMAIL_USER);
+  console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
+
+  console.log("Email sent successfully");
+} catch (err) {
+  console.log("Email failed:", err);
+  return res.json({
+    success: false,
+    message: "Email failed to send"
+  });
+}
+
+  return res.json({
+    success: true,
+    email,
+    token
+  });
 });
 
-// Login user 
+// ================= LOGIN =================
 app.post("/login", async (req, res) => {
-    try {
-        // Validate email format
-        if (!isValidEmail(req.body.email)) {
-            return res.send('Please provide a valid email address.');
-        }
+  const { username, password, email } = req.body;
 
-        const check = await collection.findOne({ name: req.body.username });
-        if (!check) {
-            return res.send("User name cannot found")
-        }
-        // Compare the hashed password from the database with the plaintext password
-        const isPasswordMatch = await bcrypt.compare(req.body.password, check.password);
-        if (!isPasswordMatch) {
-            return res.send("wrong Password");
-        }
-        // Compare email directly (emails are not hashed)
-        const isEmailMatch = req.body.email === check.email;
-        if (!isEmailMatch) {
-            return res.send("wrong Email");
-        }
-        res.redirect("/index.html");
-        console.log("User logged in successfully:", check);
-        localStorage.setItem("username", req.body.username);
-    }
-    catch {
-        res.send("wrong Details");
-    }
+  const user = await collection.findOne({ name: username });
+
+  if (!user) return res.json({ success: false, message: "User not found" });
+  if (!user.verified) {
+    return res.json({
+      success: false,
+      message: "Email not verified"
+    });
+  }
+
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.json({ success: false, message: "Wrong password" });
+
+  if (user.email !== email) {
+    return res.json({ success: false, message: "Wrong email" });
+  }
+
+  return res.json({ success: true });
 });
 
-// Verify email matches account for contact form
-app.post("/verify-email", async (req, res) => {
-    try {
-        const { username, email } = req.body;
+// ================= VERIFY PAGE LINK =================
+app.get("/verify", async (req, res) => {
+  const { token } = req.query;
 
-        // Validate email format
-        if (!isValidEmail(email)) {
-            return res.json({ valid: false, message: 'Invalid email format.' });
-        }
+  const user = await collection.findOne({ verificationToken: token });
 
-        // Find user in database
-        const user = await collection.findOne({ name: username });
-        if (!user) {
-            return res.json({ valid: false, message: 'User not found.' });
-        }
+  if (!user) return res.send("Invalid token");
 
-        // Check if email matches
-        if (user.email === email) {
-            return res.json({ valid: true, message: 'Email verified.' });
-        } else {
-            return res.json({ valid: false, message: 'Email does not match account email.' });
-        }
+  if (new Date() > new Date(user.tokenExpiresAt)) {
+    return res.send("Token expired. Please sign up again.");
+  }
+
+  await collection.updateOne(
+    { _id: user._id },
+    {
+      $set: { verified: true },
+      $unset: { verificationToken: "", tokenExpiresAt: "" }
     }
-    catch (error) {
-        res.json({ valid: false, message: 'An error occurred during verification.' });
-    }
+  );
+
+  res.send("Email verified successfully! You can now log in.");
 });
 
-// Debug endpoint: View all users (remove this in production!)
-app.get("/debug/users", async (req, res) => {
-    try {
-        const users = await collection.find({});
-        res.json(users);
-    } catch (error) {
-        res.json({ error: error.message });
-    }
+// ================= CHECK VERIFIED =================
+app.post("/check-verified", async (req, res) => {
+  const { username } = req.body;
+
+  const user = await collection.findOne({ name: username });
+
+  if (!user) return res.json({ verified: false });
+
+  return res.json({ verified: user.verified });
 });
 
-// Define Port for Application
+// ================= SERVER =================
 const port = process.env.PORT || 5000;
+
 app.listen(port, () => {
-    console.log(`Server listening on port ${port}`)
+  console.log(`Server running on port ${port}`);
 });

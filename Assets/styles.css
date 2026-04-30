@@ -186,7 +186,7 @@ main{
   transform: scale(1.1) translateY(-10px);
 }
 
-.logInForm, #signUpForm{
+.logInForm, #signupForm{
   margin: 10px;
   display: flex;
   flex-direction: column;
