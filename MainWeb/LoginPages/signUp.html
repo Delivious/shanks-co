@@ -38,7 +38,7 @@
       <label for="password">Password:</label>
       <input type="password" id="password" name="password" required>
       
-      <button type="submit">Sign Up</button>
+      <button id="submit" type="submit">Sign Up</button>
     </form>
     <div id="error"></div>
   </main>
@@ -86,8 +86,7 @@
             }
 
             // ================= SAVE LOGIN INFO =================
-            localStorage.setItem("username", username);
-            localStorage.setItem("verificationToken", data.token);
+            
 
             alert("Account created! Check your email.");
 
