@@ -257,14 +257,15 @@ a{
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  margin-bottom: 60px;
+  gap: 20%;
 }
+
 .container {
-  flex: 1;
   position: relative;
   display: inline-block;
-  width: 100%;
+  width: 250px;
   height: 250px;
-  margin-left: 5%;
 }
 .gameDiv {
   position: relative;

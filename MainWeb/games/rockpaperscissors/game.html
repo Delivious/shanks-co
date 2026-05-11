@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rock Paper Scissors</title>
+</head>
+<body>
+  <div class="row">
+      <div class="col">
+        <img id="player" src="rock.png">
+      </div>
+      <div class="col">
+        <img id="winorlose" src="vs.png">
+      </div>
+      <div class="col">
+        <img id="enemy" src="mark.png">
+      </div>
+  </div>
+  <div class="row">
+      <div class="col">
+        <img id="rock" src="rock.png">
+      </div>
+      <div class="col">
+        <img id="paper" src="paper.png">
+      </div>
+      <div class="col">
+        <img id="scissors" src="scissors.png">
+      </div>
+  </div>
+  <button id="submit">Play the game</button>
+  <h2 id="gamecounter">0/0/0</h2>
+  <script>
+    const player = document.getElementById("player")
+    const enemy = document.getElementById("enemy")
+    const vs = document.getElementById("winorlose")
+    const paper = document.getElementById("paper")
+    const rock = document.getElementById("rock")
+    const scissors = document.getElementById("scissors")
+    const submit = document.getElementById("submit")
+    const counter = document.getElementById("gamecounter")
+    const itemList = [rock.src, scissors.src, paper.src]
+    const itemSingle = ["rock", "scissors", "paper"]
+    let curItem = "rock"
+    let ties = 0
+    let wins = 0
+    let losses = 0
+    let enemyChoice = "nothing"
+    scissors.addEventListener("click",()=>{
+      curItem="scissors"
+      player.src = itemList[1]
+    })
+    rock.addEventListener("click",()=>{
+      curItem="rock"
+      player.src = itemList[0]
+    })
+    paper.addEventListener("click",()=>{
+      curItem="paper"
+      player.src = itemList[2]
+    })
+    submit.addEventListener("click",playFunc)
+    function playFunc(){
+      submit.removeEventListener("click",playFunc)
+      const randomIndex = Math.floor(Math.random()*itemList.length)
+      enemy.src = itemList[randomIndex]
+      enemyChoice = itemSingle[randomIndex]
+      console.log(enemyChoice)
+      const win = winCheck()
+      console.log(win)
+      if(win == "tie"){
+        ties++
+      }
+      else if(win == true){
+        wins++
+      }
+      else{
+        losses++
+      }
+      gamecounter.textContent = `${wins}/${ties}/${losses}`
+      submit.addEventListener("click",playFunc)
+    }
+    function winCheck(){
+      if(curItem == "rock" && enemyChoice == "scissors"){
+        return true
+      }
+      else if(curItem == "scissors" && enemyChoice == "paper"){
+        return true
+      }
+      else if(curItem == "paper" && enemyChoice == "rock"){
+        return true
+      }
+      else if(curItem == enemyChoice){
+        return "tie"
+      }
+      else{
+        return false
+      }
+    }           
+  </script>
+</body>
+</html>

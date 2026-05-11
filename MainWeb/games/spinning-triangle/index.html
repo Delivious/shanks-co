@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h1 id="h1">Time You have watched a spinning triangle: 0:0:00</h1>
+  <div class="triangle-up" id="spin"></div>
+  <script>
+    const spin = document.getElementById("spin")
+    let lastTime = Date.now()
+    let x = 0
+    let y = 0
+    let rotation = 0
+    let direct = 10
+    let seconds = 0
+    let minutes = 0
+    let hours = 0
+    let dx = 10, dy = 10;
+    function spinFunc(){
+        rotation+=10
+        if(rotation >= 360) rotation=0
+
+    }
+    function timeSpentWatching() {
+      seconds++
+      if(seconds / 60 == 1){
+        minutes++
+        seconds = 0
+      }
+      if(minutes / 60 == 1){
+        hours++
+        minutes = 0
+      }
+      if (seconds<10) document.getElementById("h1").innerText = `Time You have watched a spinning triangle: ${hours}:${minutes}:0${seconds}`
+      else document.getElementById("h1").innerText = `Time You have watched a spinning triangle: ${hours}:${minutes}:${seconds}`
+    }
+    function animate() {
+      // Update position
+      x += dx;
+      y += dy;
+
+      // Horizontal Bounce (Left or Right wall)
+      if (x + spin.clientWidth >= window.innerWidth || x <= 0) {
+        dx *= -1;
+        changeColor(); // Optional: classic color change on bounce
+      }
+
+      // Vertical Bounce (Top or Bottom wall)
+      if (y + spin.clientHeight >= window.innerHeight || y <= 0) {
+        dy *= -1;
+        changeColor();
+      }
+
+      // Apply to element
+      spin.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
+    }
+
+    function changeColor() {
+      const randomColor = `hsl(${Math.random() * 360}, 70%, 50%)`;
+      spin.style.borderBottomColor = randomColor;
+    }
+    setInterval(animate, 17)
+    setInterval(spinFunc, 17)
+    setInterval(timeSpentWatching, 1000)
+  </script>
+</body>
+</html>
