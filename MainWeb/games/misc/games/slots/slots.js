@@ -2,7 +2,7 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 canvas.width = 1350;
-canvas.height = 750;
+canvas.height = 1350;
 
 // Colors
 const GREEN = "#00ff88";
@@ -18,6 +18,17 @@ let typedBet = "";
 let message = "Place your bet!";
 let rolling = false;
 let gameOver = false;
+
+
+//save points
+function savePoints() {
+  localStorage.setItem('save1', cash);
+  localStorage.setItem('save2', cash);
+  localStorage.setItem('save3', cash);
+}
+let save1Active = true;
+let save2Active = false;
+let save3Active = false;
 
 // Load images
 const symbolNames = [
@@ -42,12 +53,15 @@ let grid = Array.from({ length: 3 }, () => Array(3).fill(0));
 const multipliers = {1:1.5,2:2,3:2.5,4:3,5:3.5,6:5};
 
 // Keypad
-const keys = [
+let keys = [
   ["1","2","3"],
   ["4","5","6"],
   ["7","8","9"],
   ["DEL","0","ALL"],
-  ["Save 1", "Save 2", "Save 3"]
+  ["ENTER"],
+  [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"} (Click me to save!)`],
+  [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"}`],
+  [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"}`]
 ];
 
 const buttons = [];
@@ -57,42 +71,133 @@ const size = 100;
 const padding = 20;
 
 keys.forEach((row, r) => {
-  row.forEach((key, c) => {
-    buttons.push({
-      key,
-      x: startX + c * (size + padding),
-      y: startY + r * (size + padding),
-      w: size,
-      h: 80
+  if (r < 4) {
+    row.forEach((key, c) => {
+      buttons.push({
+        key,
+        x: startX + c * (size + padding),
+        y: startY + r * (size + padding),
+        w: size,
+        h: 80
+      });
     });
-  });
+  }
+  else if (r === 4) {
+    row.forEach((key, c) => {
+      buttons.push({
+        key,
+        x: startX,
+        y: startY + 4 * (size + padding) + (r - 4) * 50,
+        w: size * 3 + padding * 2,
+        h: 80
+      });
+    });
+  }
+  else{
+    row.forEach((key, c) => {
+      buttons.push({
+        key,
+        x: 0,
+        y: startY + 4 * (size + padding) + (r - 4.75) * 150,
+        w: size * 6.57 + padding * 2,
+        h: 80
+      });
+    });
+  }
 });
 
-// ENTER button
-const enterBtn = {
-  x: startX,
-  y: startY + 4 * (size + padding),
-  w: size * 3 + padding * 2,
-  h: 80
-};
-const save1Btn = {
-  x: startX,
-  y: startY + 5 * (size + padding),
-  w: size * 3 + padding * 2,
-  h: 80
-};
-const save2Btn = {
-  x: startX,
-  y: startY + 6 * (size + padding),
-  w: size * 3 + padding * 2,
-  h: 80
-};
-const save3Btn = {
-  x: startX,
-  y: startY + 7 * (size + padding),
-  w: size * 3 + padding * 2,
-  h: 80
-};
+//saves game
+function updateSaveButtons(saveSlot){
+  if (saveSlot === 'save1' && save1Active) {
+    localStorage.setItem(saveSlot, cash);
+    keys = [
+      ["1","2","3"],
+      ["4","5","6"],
+      ["7","8","9"],
+      ["DEL","0","ALL"],
+      ["ENTER"],
+      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"} (Click me to save!)`],
+      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"}`],
+      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"}`]
+    ];
+  } else if (saveSlot === 'save2' && save2Active) {
+    localStorage.setItem(saveSlot, cash);
+    keys = [
+      ["1","2","3"],
+      ["4","5","6"],
+      ["7","8","9"],
+      ["DEL","0","ALL"],
+      ["ENTER"],
+      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"}`],
+      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"} (Click me to save!)`],
+      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"}`]
+    ];
+  } else if (saveSlot === 'save3' && save3Active) {
+    localStorage.setItem(saveSlot, cash);
+    keys = [
+      ["1","2","3"],
+      ["4","5","6"],
+      ["7","8","9"],
+      ["DEL","0","ALL"],
+      ["ENTER"],
+      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"}`],
+      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"}`],
+      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"} (Click me to save!)`]
+    ];
+  }
+}
+
+//swaps save slot
+function toggleSaveSlot(slot){
+  if (slot == 1 && !save1Active) {
+    save1Active = true;
+    save2Active = false;
+    save3Active = false;
+    keys = [
+      ["1","2","3"],
+      ["4","5","6"],
+      ["7","8","9"],
+      ["DEL","0","ALL"],
+      ["ENTER"],
+      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"} (Click me to save!)`],
+      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"}`],
+      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"}`]
+    ];
+    cash = localStorage.getItem('save1') || 250;
+  } else if (slot == 2 && !save2Active) {
+    save1Active = false;
+    save2Active = true;
+    save3Active = false;
+    keys = [
+      ["1","2","3"],
+      ["4","5","6"],
+      ["7","8","9"],
+      ["DEL","0","ALL"],
+      ["ENTER"],
+      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"}`],
+      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"} (Click me to save!)`],
+      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"}`]
+    ];
+    cash = localStorage.getItem('save2') || 250;
+  } else if (slot == 3 && !save3Active) {
+    save1Active = false;
+    save2Active = false;
+    save3Active = true;
+    keys = [
+      ["1","2","3"],
+      ["4","5","6"],
+      ["7","8","9"],
+      ["DEL","0","ALL"],
+      ["ENTER"],
+      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"}`],
+      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"}`],
+      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"} (Click me to save!)`]
+    ];
+    cash = localStorage.getItem('save3') || 250;
+  }
+}
+
+const enterBtn = buttons.find(b => b.key === "ENTER");
 // Mouse tracking for hover
 let mouseX = 0;
 let mouseY = 0;
@@ -118,13 +223,9 @@ function drawKeypad() {
   ctx.fillText(`Bet: $${typedBet || "0"}`, startX, startY - 40);
 
   buttons.forEach(drawButton);
-
-  // ENTER
-  drawButton({...enterBtn, key: "ENTER"});
-  drawButton({...save1Btn, key: "SAVE 1"});
-  drawButton({...save2Btn, key: "SAVE 2"});
-  drawButton({...save3Btn, key: "SAVE 3"});
 }
+
+
 
 // Draw UI
 function drawUI() {
@@ -276,6 +377,20 @@ canvas.addEventListener("click", e => {
       if (!isNaN(btn.key)) typedBet += btn.key;
       else if (btn.key === "DEL") typedBet = typedBet.slice(0, -1);
       else if (btn.key === "ALL") typedBet = cash.toString();
+      else if (btn.key.startsWith("SAVE 1")) {
+        updateSaveButtons('save1');
+        toggleSaveSlot(1);
+      }
+
+      else if (btn.key.startsWith("SAVE 2")) {
+        updateSaveButtons('save2');
+        toggleSaveSlot(2);
+      }
+
+      else if (btn.key.startsWith("SAVE 3")) {
+        updateSaveButtons('save3');
+        toggleSaveSlot(3);
+      }
     }
   });
 
@@ -301,6 +416,7 @@ canvas.addEventListener("click", e => {
       bet = 0;
     }
   }
+  
 });
 
 // Keyboard input
@@ -323,7 +439,6 @@ canvas.addEventListener("mousemove", e => {
   mouseX = e.clientX - rect.left;
   mouseY = e.clientY - rect.top;
 });
-
 // Main loop
 function loop() {
   ctx.fillStyle = WHITE;
