@@ -30,17 +30,17 @@ function createTriangle(x, y){
   const div = document.createElement("div");
   div.className = "triangle-up";
 
-  document.body.appendChild(div);
+  
 
   const triangle = new Triangle(
     div,
-    x,
-    y,
+    Math.floor(Math.random() * (window.innerWidth - 100)),
+    Math.floor(Math.random() * (window.innerHeight - 100)),
     0,
     (Math.random() * 8) + 2,
     (Math.random() * 8) + 2
   );
-
+  document.body.appendChild(div);
   // CLICK EVENT ADDED ONCE
   div.addEventListener("click", (e) => {
 
