@@ -237,10 +237,9 @@ function checkWin() {
 
 function gameover(){
   console.log("Game Over!");
-  ctx.fillStyle = BLACK;
-  ctx.font = "60px Arial";
-  ctx.fillText("Game Over!", canvas.width / 2 - 150, canvas.height / 2);
-  
+  setTimeout(() => {
+    message = "Click ENTER to restart!";
+  }, 2000);
 }
 
 // Click handling
@@ -272,6 +271,13 @@ canvas.addEventListener("click", e => {
       } else {
         roll();
       }
+    }
+    else if (message === "Click ENTER to restart!") {
+      cash = 250;
+      gameOver = false;
+      message = "Place your bet!";
+      typedBet = "";
+      bet = 0;
     }
   }
 });
