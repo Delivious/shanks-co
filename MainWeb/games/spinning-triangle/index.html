@@ -11,7 +11,9 @@
 <h1 id="h1">Time You have watched a spinning triangle: 0:0:00</h1>
 <h2 id="h2">Bounces: 0</h2>
 <h2 id="h3">Triangles: 0</h2>
+
 <script>
+
 class Triangle {
   constructor(element, x, y, rotation, dx, dy) {
     this.element = element;
@@ -22,42 +24,77 @@ class Triangle {
     this.dy = dy;
   }
 }
+
 let triCount = 0;
 const triangles = [];
-let bounces = 0
+let bounces = 0;
+
+// CACHE WINDOW SIZE
+let screenWidth = window.innerWidth;
+let screenHeight = window.innerHeight;
+
+window.addEventListener("resize", () => {
+  screenWidth = window.innerWidth;
+  screenHeight = window.innerHeight;
+});
+
+// CACHE DOM ELEMENTS
+const h1 = document.getElementById("h1");
+const h2 = document.getElementById("h2");
+const h3 = document.getElementById("h3");
+
+// TRIANGLE SIZE
+const TRI_SIZE = 100;
+
 function createTriangle(x, y){
-  triCount++
+
+  triCount++;
+
   const div = document.createElement("div");
   div.className = "triangle-up";
 
-  
+  // GPU ACCELERATION
+  div.style.willChange = "transform";
 
   const triangle = new Triangle(
     div,
-    Math.floor(Math.random() * (window.innerWidth - 100)),
-    Math.floor(Math.random() * (window.innerHeight - 100)),
+
+    // USE PROVIDED POSITION IF EXISTS
+    x ?? Math.floor(Math.random() * (screenWidth - TRI_SIZE)),
+
+    y ?? Math.floor(Math.random() * (screenHeight - TRI_SIZE)),
+
     0,
+
     (Math.random() * 8) + 2,
+
     (Math.random() * 8) + 2
   );
+
   document.body.appendChild(div);
-  // CLICK EVENT ADDED ONCE
-  div.addEventListener("click", (e) => {
 
-    // stop click from hitting parent triangles
-    e.stopPropagation();
-
-    createTriangle(
-      triangle.x + 50,
-      triangle.y + 50
-    );
-  });
+  // SAVE REFERENCE
+  div.triangleRef = triangle;
 
   triangles.push(triangle);
 }
 
 // first triangle
 createTriangle(0,0);
+
+
+// SINGLE CLICK HANDLER (EVENT DELEGATION)
+document.body.addEventListener("click", (e) => {
+
+  if(!e.target.classList.contains("triangle-up")) return;
+
+  const triangle = e.target.triangleRef;
+
+  createTriangle(
+    triangle.x + 50,
+    triangle.y + 50
+  );
+});
 
 let seconds = 0;
 let minutes = 0;
@@ -74,26 +111,28 @@ function animate(triangle){
     triangle.rotation = 0;
   }
 
+  // NO MORE clientWidth/clientHeight
   if(
-    triangle.x + triangle.element.clientWidth >= window.innerWidth ||
+    triangle.x + TRI_SIZE >= screenWidth ||
     triangle.x <= 0
   ){
     triangle.dx *= -1;
     changeColor(triangle.element);
-    bounces++
+    bounces++;
   }
 
   if(
-    triangle.y + triangle.element.clientHeight >= window.innerHeight ||
+    triangle.y + TRI_SIZE >= screenHeight ||
     triangle.y <= 0
   ){
     triangle.dy *= -1;
     changeColor(triangle.element);
-    bounces++
+    bounces++;
   }
 
+  // translate3d = GPU accelerated
   triangle.element.style.transform =
-    `translate(${triangle.x}px, ${triangle.y}px)
+    `translate3d(${triangle.x}px, ${triangle.y}px, 0)
      rotate(${triangle.rotation}deg)`;
 }
 
@@ -116,23 +155,33 @@ function timeSpentWatching() {
     minutes = 0;
   }
 
-  document.getElementById("h1").innerText =
+  h1.innerText =
     `Time You have watched a spinning triangle: ${hours}:${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
+// FASTER LOOP
 function animation(){
-  triangles.forEach(triangle => {
-    animate(triangle);
-  });
-  requestAnimationFrame(animation)
+
+  // NORMAL FOR LOOP IS FASTER
+  for(let i = 0; i < triangles.length; i++){
+    animate(triangles[i]);
+  }
+
+  requestAnimationFrame(animation);
 }
-requestAnimationFrame(animation)
+
+requestAnimationFrame(animation);
 
 setInterval(timeSpentWatching, 1000);
-setInterval(()=>{
-  document.getElementById("h2").innerText = `Bounces: ${bounces}`;
-  document.getElementById("h3").innerText = `Triangles: ${triCount}`;
-},100)
+
+// UPDATE UI LESS OFTEN
+setInterval(() => {
+
+  h2.innerText = `Bounces: ${bounces}`;
+  h3.innerText = `Triangles: ${triCount}`;
+
+}, 1000);
+
 </script>
 </body>
 </html>
