@@ -9,7 +9,7 @@ const bluesound = new Audio('simonassets/bluesound.mp3');
 const redsound = new Audio('simonassets/redsound.mp3');
 const incorrect = new Audio('simonassets/incorrect.mp3');
 
-const orderlist = [];
+const orderlist = [1,1,1,1,1];
 
 let currentclick = 0;
 let timetowait = 500;
@@ -48,16 +48,21 @@ function playSequence() {
 
     acceptingInput = false;
 
-    // Clear any previous sequence timeouts
+    // Clear old timeouts
     sequenceTimeouts.forEach(timeout => clearTimeout(timeout));
     sequenceTimeouts = [];
+
+    // Every 5 rounds, cut timing in half
+    let speedLevel = Math.floor(orderlist.length / 5);
+
+    // Base timing
+    let flashTime = timetowait / Math.pow(1.5, speedLevel);
+    let delayBetween = 1000 / Math.pow(1.5, speedLevel);
 
     for (let i = 0; i < orderlist.length; i++) {
 
         const timeout = setTimeout(() => {
-            if (orderlist.length%5==0){
-                timetowait=Math.max(100,timetowait/2);
-            }
+
             resetButtons();
 
             if (orderlist[i] === 1) {
@@ -84,21 +89,20 @@ function playSequence() {
                 redButton.src = "simonassets/redlight.png";
             }
 
-            setTimeout(resetButtons, timetowait);
+            setTimeout(resetButtons, flashTime);
 
             // Allow player input after sequence ends
             if (i === orderlist.length - 1) {
                 setTimeout(() => {
                     acceptingInput = true;
-                }, timetowait);
+                }, flashTime);
             }
 
-        }, i * 1000);
+        }, i * delayBetween);
 
         sequenceTimeouts.push(timeout);
     }
 }
-
 function handleClick(colorNumber) {
 
     if (!acceptingInput) return;
