@@ -46,7 +46,8 @@ const keys = [
   ["1","2","3"],
   ["4","5","6"],
   ["7","8","9"],
-  ["DEL","0","ALL"]
+  ["DEL","0","ALL"],
+  ["Save 1", "Save 2", "Save 3"]
 ];
 
 const buttons = [];
@@ -74,7 +75,24 @@ const enterBtn = {
   w: size * 3 + padding * 2,
   h: 80
 };
-
+const save1Btn = {
+  x: startX,
+  y: startY + 5 * (size + padding),
+  w: size * 3 + padding * 2,
+  h: 80
+};
+const save2Btn = {
+  x: startX,
+  y: startY + 6 * (size + padding),
+  w: size * 3 + padding * 2,
+  h: 80
+};
+const save3Btn = {
+  x: startX,
+  y: startY + 7 * (size + padding),
+  w: size * 3 + padding * 2,
+  h: 80
+};
 // Mouse tracking for hover
 let mouseX = 0;
 let mouseY = 0;
@@ -103,6 +121,9 @@ function drawKeypad() {
 
   // ENTER
   drawButton({...enterBtn, key: "ENTER"});
+  drawButton({...save1Btn, key: "SAVE 1"});
+  drawButton({...save2Btn, key: "SAVE 2"});
+  drawButton({...save3Btn, key: "SAVE 3"});
 }
 
 // Draw UI
