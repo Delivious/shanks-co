@@ -55,14 +55,14 @@ function createTriangle(x, y){
 
   // GPU ACCELERATION
   div.style.willChange = "transform";
-
+  changeColor(div);
   const triangle = new Triangle(
     div,
 
     // USE PROVIDED POSITION IF EXISTS
-    x ?? Math.floor(Math.random() * (screenWidth - TRI_SIZE)),
+    Math.floor(Math.random() * (screenWidth - TRI_SIZE)),
 
-    y ?? Math.floor(Math.random() * (screenHeight - TRI_SIZE)),
+    Math.floor(Math.random() * (screenHeight - TRI_SIZE)),
 
     0,
 
