@@ -120,11 +120,13 @@ function timeSpentWatching() {
     `Time You have watched a spinning triangle: ${hours}:${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
-setInterval(() => {
+function animation(){
   triangles.forEach(triangle => {
     animate(triangle);
   });
-}, 17);
+  requestAnimationFrame(animation)
+}
+requestAnimationFrame(animation)
 
 setInterval(timeSpentWatching, 1000);
 setInterval(()=>{
