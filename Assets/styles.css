@@ -312,6 +312,29 @@ a{
     right: 100px;
     text-align: center;
   }
+  .gameDiv {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    background-color: rgba(40, 40, 40, 0.8);
+    border-radius: 20px;
+    transition: transform 0.3s ease-in, 0.3s ease-out;
+    z-index: 2;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+  }
+
+  .gameImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    border-radius: 20px;
+    transition: transform 0.3s ease-in, 0.3s ease-out;
+    z-index: 1;
+  }
 }
 @media screen and (max-width: 750px) {
   .headDiv {
@@ -343,4 +366,14 @@ a{
   #homeHead1, #homeHead2, #homeHead3{
     font-size: 200%;
   }
+  .gameDiv {
+    width: 150px;
+    height: 150px;
+  }
+
+  .gameImage {
+    width: 150px;
+    height: 150px;
+  }
+  
 }
