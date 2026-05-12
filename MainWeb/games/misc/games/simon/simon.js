@@ -9,7 +9,7 @@ const bluesound = new Audio('simonassets/bluesound.mp3');
 const redsound = new Audio('simonassets/redsound.mp3');
 const incorrect = new Audio('simonassets/incorrect.mp3');
 
-const orderlist = [1,1,1,1,1];
+const orderlist = [];
 
 let currentclick = 0;
 let timetowait = 500;
