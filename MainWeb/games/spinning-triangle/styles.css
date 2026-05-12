@@ -9,3 +9,24 @@
   border-right: 100px solid transparent;
   border-bottom: 100px solid black; /* The colored side forms the base */
 }
+h1{
+  position: fixed;
+  top: 40%;
+  left: 40%;
+  color: white;
+}
+body {
+  background-color: rgb(40,40,40);
+}
+#h2{
+  position: fixed;
+  top: 50%;
+  left: 49%;
+  color: white;
+}
+#h3{
+  position: fixed;
+  top: 60%;
+  left: 49%;
+  color: white;
+}

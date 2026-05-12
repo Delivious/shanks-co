@@ -1,71 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
   <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Spinning Triangle</title>
 </head>
 <body>
-  <h1 id="h1">Time You have watched a spinning triangle: 0:0:00</h1>
-  <div class="triangle-up" id="spin"></div>
-  <script>
-    const spin = document.getElementById("spin")
-    let lastTime = Date.now()
-    let x = 0
-    let y = 0
-    let rotation = 0
-    let direct = 10
-    let seconds = 0
-    let minutes = 0
-    let hours = 0
-    let dx = 10, dy = 10;
-    function spinFunc(){
-        rotation+=10
-        if(rotation >= 360) rotation=0
 
-    }
-    function timeSpentWatching() {
-      seconds++
-      if(seconds / 60 == 1){
-        minutes++
-        seconds = 0
-      }
-      if(minutes / 60 == 1){
-        hours++
-        minutes = 0
-      }
-      if (seconds<10) document.getElementById("h1").innerText = `Time You have watched a spinning triangle: ${hours}:${minutes}:0${seconds}`
-      else document.getElementById("h1").innerText = `Time You have watched a spinning triangle: ${hours}:${minutes}:${seconds}`
-    }
-    function animate() {
-      // Update position
-      x += dx;
-      y += dy;
+<h1 id="h1">Time You have watched a spinning triangle: 0:0:00</h1>
+<h2 id="h2">Bounces: 0</h2>
+<h2 id="h3">Triangles: 0</h2>
+<script>
+class Triangle {
+  constructor(element, x, y, rotation, dx, dy) {
+    this.element = element;
+    this.x = x;
+    this.y = y;
+    this.rotation = rotation;
+    this.dx = dx;
+    this.dy = dy;
+  }
+}
+let triCount = 0;
+const triangles = [];
+let bounces = 0
+function createTriangle(x, y){
+  triCount++
+  const div = document.createElement("div");
+  div.className = "triangle-up";
 
-      // Horizontal Bounce (Left or Right wall)
-      if (x + spin.clientWidth >= window.innerWidth || x <= 0) {
-        dx *= -1;
-        changeColor(); // Optional: classic color change on bounce
-      }
+  document.body.appendChild(div);
 
-      // Vertical Bounce (Top or Bottom wall)
-      if (y + spin.clientHeight >= window.innerHeight || y <= 0) {
-        dy *= -1;
-        changeColor();
-      }
+  const triangle = new Triangle(
+    div,
+    x,
+    y,
+    0,
+    (Math.random() * 8) + 2,
+    (Math.random() * 8) + 2
+  );
 
-      // Apply to element
-      spin.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
-    }
+  // CLICK EVENT ADDED ONCE
+  div.addEventListener("click", (e) => {
 
-    function changeColor() {
-      const randomColor = `hsl(${Math.random() * 360}, 70%, 50%)`;
-      spin.style.borderBottomColor = randomColor;
-    }
-    setInterval(animate, 17)
-    setInterval(spinFunc, 17)
-    setInterval(timeSpentWatching, 1000)
-  </script>
+    // stop click from hitting parent triangles
+    e.stopPropagation();
+
+    createTriangle(
+      triangle.x + 50,
+      triangle.y + 50
+    );
+  });
+
+  triangles.push(triangle);
+}
+
+// first triangle
+createTriangle(0,0);
+
+let seconds = 0;
+let minutes = 0;
+let hours = 0;
+
+function animate(triangle){
+
+  triangle.x += triangle.dx;
+  triangle.y += triangle.dy;
+
+  triangle.rotation += 5;
+
+  if(triangle.rotation >= 360){
+    triangle.rotation = 0;
+  }
+
+  if(
+    triangle.x + triangle.element.clientWidth >= window.innerWidth ||
+    triangle.x <= 0
+  ){
+    triangle.dx *= -1;
+    changeColor(triangle.element);
+    bounces++
+  }
+
+  if(
+    triangle.y + triangle.element.clientHeight >= window.innerHeight ||
+    triangle.y <= 0
+  ){
+    triangle.dy *= -1;
+    changeColor(triangle.element);
+    bounces++
+  }
+
+  triangle.element.style.transform =
+    `translate(${triangle.x}px, ${triangle.y}px)
+     rotate(${triangle.rotation}deg)`;
+}
+
+function changeColor(obj) {
+  const randomColor = `hsl(${Math.random() * 360}, 70%, 50%)`;
+  obj.style.borderBottomColor = randomColor;
+}
+
+function timeSpentWatching() {
+
+  seconds++;
+
+  if(seconds >= 60){
+    minutes++;
+    seconds = 0;
+  }
+
+  if(minutes >= 60){
+    hours++;
+    minutes = 0;
+  }
+
+  document.getElementById("h1").innerText =
+    `Time You have watched a spinning triangle: ${hours}:${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+setInterval(() => {
+  triangles.forEach(triangle => {
+    animate(triangle);
+  });
+}, 17);
+
+setInterval(timeSpentWatching, 1000);
+setInterval(()=>{
+  document.getElementById("h2").innerText = `Bounces: ${bounces}`;
+  document.getElementById("h3").innerText = `Triangles: ${triCount}`;
+},100)
+</script>
 </body>
 </html>
