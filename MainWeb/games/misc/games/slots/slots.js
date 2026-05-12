@@ -199,7 +199,23 @@ function checkWin() {
         won = true;
       }
     }
+    // Diagonal top-left -> bottom-right
+    if (
+      grid[0][0] === grid[1][1] &&
+      grid[1][1] === grid[2][2]
+    ) {
+      totalWin += bet * multipliers[grid[0][0]] * 5;
+      won = true;
+    }
 
+    // Diagonal top-right -> bottom-left
+    if (
+      grid[0][2] === grid[1][1] &&
+      grid[1][1] === grid[2][0]
+    ) {
+      totalWin += bet * multipliers[grid[0][2]] * 5;
+      won = true;
+    }
     if (won) {
       message = `You win $${totalWin}`;
     } else {
@@ -224,6 +240,7 @@ function gameover(){
   ctx.fillStyle = BLACK;
   ctx.font = "60px Arial";
   ctx.fillText("Game Over!", canvas.width / 2 - 150, canvas.height / 2);
+  
 }
 
 // Click handling
