@@ -110,40 +110,13 @@ keys.forEach((row, r) => {
 function updateSaveButtons(saveSlot){
   if (saveSlot === 'save1' && save1Active) {
     localStorage.setItem(saveSlot, cash);
-    keys = [
-      ["1","2","3"],
-      ["4","5","6"],
-      ["7","8","9"],
-      ["DEL","0","ALL"],
-      ["ENTER"],
-      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"} (Click me to save!)`],
-      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"}`],
-      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"}`]
-    ];
+    keys[-3] = `SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"} (Click me to save!)`
   } else if (saveSlot === 'save2' && save2Active) {
     localStorage.setItem(saveSlot, cash);
-    keys = [
-      ["1","2","3"],
-      ["4","5","6"],
-      ["7","8","9"],
-      ["DEL","0","ALL"],
-      ["ENTER"],
-      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"}`],
-      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"} (Click me to save!)`],
-      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"}`]
-    ];
+    keys[-2] = `SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"} (Click me to save!)`
   } else if (saveSlot === 'save3' && save3Active) {
     localStorage.setItem(saveSlot, cash);
-    keys = [
-      ["1","2","3"],
-      ["4","5","6"],
-      ["7","8","9"],
-      ["DEL","0","ALL"],
-      ["ENTER"],
-      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"}`],
-      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"}`],
-      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"} (Click me to save!)`]
-    ];
+    keys[-1] = `SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"} (Click me to save!)`
   }
 }
 
@@ -153,47 +126,23 @@ function toggleSaveSlot(slot){
     save1Active = true;
     save2Active = false;
     save3Active = false;
-    keys = [
-      ["1","2","3"],
-      ["4","5","6"],
-      ["7","8","9"],
-      ["DEL","0","ALL"],
-      ["ENTER"],
-      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"} (Click me to save!)`],
-      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"}`],
-      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"}`]
-    ];
+    keys[-3] = `SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"} (Click me to save!)`
     cash = localStorage.getItem('save1') || 250;
+    rebuildButtons()
   } else if (slot == 2 && !save2Active) {
     save1Active = false;
     save2Active = true;
     save3Active = false;
-    keys = [
-      ["1","2","3"],
-      ["4","5","6"],
-      ["7","8","9"],
-      ["DEL","0","ALL"],
-      ["ENTER"],
-      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"}`],
-      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"} (Click me to save!)`],
-      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"}`]
-    ];
-    cash = localStorage.getItem('save2') || 250;
+    keys[-2] = `SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"} (Click me to save!)`
+    cash = Number(localStorage.getItem('save1') || 250)
+    rebuildButtons()
   } else if (slot == 3 && !save3Active) {
     save1Active = false;
     save2Active = false;
     save3Active = true;
-    keys = [
-      ["1","2","3"],
-      ["4","5","6"],
-      ["7","8","9"],
-      ["DEL","0","ALL"],
-      ["ENTER"],
-      [`SAVE 1: $${localStorage.getItem('save1') || 250} Active: ${save1Active ? "Yes" : "No"}`],
-      [`SAVE 2: $${localStorage.getItem('save2') || 250} Active: ${save2Active ? "Yes" : "No"}`],
-      [`SAVE 3: $${localStorage.getItem('save3') || 250} Active: ${save3Active ? "Yes" : "No"} (Click me to save!)`]
-    ];
-    cash = localStorage.getItem('save3') || 250;
+    keys[-1] = `SAVE 3: $${localStorage.getItem('save2') || 250} Active: ${save3Active ? "Yes" : "No"} (Click me to save!)`
+    cash = Number(localStorage.getItem('save2') || 250)
+    rebuildButtons()
   }
 }
 
@@ -439,6 +388,45 @@ canvas.addEventListener("mousemove", e => {
   mouseX = e.clientX - rect.left;
   mouseY = e.clientY - rect.top;
 });
+function rebuildButtons() {
+  buttons = [];
+
+  keys.forEach((row, r) => {
+    if (r < 4) {
+      row.forEach((key, c) => {
+        buttons.push({
+          key,
+          x: startX + c * (size + padding),
+          y: startY + r * (size + padding),
+          w: size,
+          h: 80
+        });
+      });
+    }
+    else if (r === 4) {
+      row.forEach((key) => {
+        buttons.push({
+          key,
+          x: startX,
+          y: startY + 4 * (size + padding),
+          w: size * 3 + padding * 2,
+          h: 80
+        });
+      });
+    }
+    else {
+      row.forEach((key) => {
+        buttons.push({
+          key,
+          x: 0,
+          y: startY + 4 * (size + padding) + 100,
+          w: size * 6.5,
+          h: 80
+        });
+      });
+    }
+  });
+}
 // Main loop
 function loop() {
   ctx.fillStyle = WHITE;
