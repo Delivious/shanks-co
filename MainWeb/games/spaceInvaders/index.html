@@ -52,13 +52,17 @@
                 }
             },80)
         }
-        const startBtn
+        const startBtn = document.getElementById("startBtn")
+        startBtn.addEventListener("click", ()=>{
             setInterval(()=>{
                 const randomStarNum = Math.ceil(Math.random() * 5)
                 for(let i = 0; i<=randomStarNum; i++){
                     createStar()
                 }
             },750)
+            startBtn.style.display = "none"
+        })
+            
         const ship = document.getElementById("ship")
         const keys = {}
         let x = 0
