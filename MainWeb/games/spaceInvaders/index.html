@@ -181,7 +181,7 @@
             laser.className = "laser"
             laser.src = "assets/laser.png"
             const shipRect = ship.getBoundingClientRect()
-            const laserX = shipRect.left + (shipRect.width / 128) 
+            const laserX = shipRect.left + (shipRect.width / 4) 
             document.body.appendChild(laser)
             laser.style.transform = `translate(${laserX}px, ${shipRect.top- 50}px)`
             let y = shipRect.top - 75
