@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <img src="assets/ship.png" id="ship">
+    <div id="startBtn">Start</div>
+    <script>
+        function spawnLaser(){
+            const laser = document.createElement("img")
+            laser.className = "laser"
+            laser.src = "assets/laser.png"
+            const shipRect = ship.getBoundingClientRect()
+            const laserX = shipRect.left + (shipRect.width / 128) 
+            document.body.appendChild(laser)
+            laser.style.transform = `translate(${laserX}px, ${shipRect.top- 50}px)`
+            let y = shipRect.top - 75
+            let dy = 25
+            laserInt = setInterval(()=>{
+                y-=dy
+                laser.style.transform = `translate(${laserX}px, ${y}px)`
+                if(y >= window.innerHeight){
+                    if(laser.parentNode){
+                        document.body.removeChild(laser)
+                    }
+                    clearInterval(laserInt)
+                }
+                
+            },80)
+        }
+        function createStar(){
+            const newStar = document.createElement("div")
+            newStar.className = "circle"
+            //wh means width/height
+            const wh = Math.ceil(Math.random() * 25)
+            newStar.style.width = `${wh}px`
+            newStar.style.height = `${wh}px`
+            document.body.append(newStar)
+            const pos = Math.floor(Math.random() * window.innerWidth)
+            newStar.style.transform = `translate(${pos}px, 0px)`
+            let y = 0
+            let starMove = setInterval(()=>{
+                y+=5
+                newStar.style.transform = `translate(${pos}px,${y}px)`
+                if(y>=window.innerHeight){
+                    document.body.removeChild(newStar)
+                    clearInterval(starMove)
+                }
+            },80)
+        }
+        const startBtn
+            setInterval(()=>{
+                const randomStarNum = Math.ceil(Math.random() * 5)
+                for(let i = 0; i<=randomStarNum; i++){
+                    createStar()
+                }
+            },750)
+        const ship = document.getElementById("ship")
+        const keys = {}
+        let x = 0
+        document.addEventListener("keydown",(e)=>{
+            keys[e.key] = true
+        })
+        document.addEventListener("keyup",(e)=>{
+            keys[e.key] = false
+        })
+        let canShoot = true
+        setInterval(()=>{
+            if(keys["d"]){
+                x+=10
+            }
+            if(keys["a"]){
+                x-=10
+            }
+            if(keys[" "] && canShoot){
+                spawnLaser()
+                canShoot = false
+                setTimeout(()=>{
+                    canShoot = true
+                },750)
+            }
+            ship.style.transform = `translate(${x}px, 0px) rotate(180deg)`
+        },16)
+    </script>
+</body>
+</html>
