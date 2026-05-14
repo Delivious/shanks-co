@@ -205,6 +205,7 @@
             const wh = Math.ceil(Math.random() * 25)
             newStar.style.width = `${wh}px`
             newStar.style.height = `${wh}px`
+            newStar.style.zIndex = "1"
             document.body.append(newStar)
             const pos = Math.floor(Math.random() * window.innerWidth)
             newStar.style.transform = `translate(${pos}px, 0px)`
