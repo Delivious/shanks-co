@@ -77,8 +77,10 @@ app.post("/signup", async (req, res) => {
 
     const link = `https://shanksco.org/verify?token=${token}`;
 
-    await resend.emails.send({
-      from: "Shank's Co <onboarding@resend.dev>",
+    console.log("Attempting to send email...");
+
+    const result = await resend.emails.send({
+      from: "Shank's Co <noreply@shanksco.org>",
       to: email,
       subject: "Verify your email",
       html: `
@@ -89,6 +91,9 @@ app.post("/signup", async (req, res) => {
       `
     });
 
+    console.log("EMAIL RESULT:");
+    console.log(result);
+
     return res.json({
       success: true,
       message: "Account created successfully"
@@ -96,11 +101,11 @@ app.post("/signup", async (req, res) => {
 
   } catch (err) {
 
+    console.error("SIGNUP ERROR:");
     console.error(err);
-
     return res.status(500).json({
       success: false,
-      message: "Server error"
+      message: err.message
     });
 
   }
