@@ -28,41 +28,56 @@ function isValidEmail(email) {
 }
 
 // ================= SIGNUP =================
+// ================= SIGNUP =================
 app.post("/signup", async (req, res) => {
-  const { username, password, email } = req.body;
-
-  if (!isValidEmail(email)) {
-    return res.redirect("/MainWeb/LoginPages/invalidEmail.html");
-  }
-
-  const existingUser = await collection.findOne({ name: username });
-  if (existingUser) {
-    return res.redirect("/MainWeb/LoginPages/existingUsername.html");
-  }
-
-  const existingEmail = await collection.findOne({ email });
-  if (existingEmail) {
-    return res.redirect("/MainWeb/LoginPages/existingEmail.html");
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const token = crypto.randomBytes(32).toString("hex");
-  const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
-
-  await collection.insertOne({
-    name: username,
-    email,
-    password: hashedPassword,
-    verificationToken: token,
-    tokenExpiresAt,
-    verified: false
-  });
-
-  const link = `https://shanksco.org/verify?token=${token}`;
 
   try {
-    const result = await resend.emails.send({
+
+    const { username, password, email } = req.body;
+
+    if (!isValidEmail(email)) {
+      return res.json({
+        success: false,
+        message: "Invalid email"
+      });
+    }
+
+    const existingUser = await collection.findOne({ name: username });
+
+    if (existingUser) {
+      return res.json({
+        success: false,
+        message: "Username already exists"
+      });
+    }
+
+    const existingEmail = await collection.findOne({ email });
+
+    if (existingEmail) {
+      return res.json({
+        success: false,
+        message: "Email already exists"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const token = crypto.randomBytes(32).toString("hex");
+
+    const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    await collection.insertOne({
+      name: username,
+      email,
+      password: hashedPassword,
+      verificationToken: token,
+      tokenExpiresAt,
+      verified: false
+    });
+
+    const link = `https://shanksco.org/verify?token=${token}`;
+
+    await resend.emails.send({
       from: "Shank's Co <onboarding@resend.dev>",
       to: email,
       subject: "Verify your email",
@@ -74,22 +89,22 @@ app.post("/signup", async (req, res) => {
       `
     });
 
-    console.log("Email sent:", result);
+    return res.json({
+      success: true,
+      message: "Account created successfully"
+    });
 
   } catch (err) {
-    console.error("EMAIL FAILED:", err);
 
-    return res.json({
+    console.error(err);
+
+    return res.status(500).json({
       success: false,
-      message: "Email failed to send"
+      message: "Server error"
     });
+
   }
 
-  return res.json({
-    success: true,
-    email,
-    token
-  });
 });
 
 // ================= LOGIN =================
