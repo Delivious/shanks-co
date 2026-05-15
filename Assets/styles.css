@@ -1,5 +1,5 @@
 body{
-  background-color: aliceblue;
+  background-color: #40B4E5;
 }
 .headDiv{
   display: flex;
@@ -10,7 +10,7 @@ body{
   top: 0;
   left: 0;
   background-color: rgb(40,40,40);
-  color: aliceblue;
+  color: #F6DC6B;
   z-index: 1000;
 }
 main{
@@ -38,7 +38,7 @@ main{
 }
 .navList li .a{
   display: inline-block;
-  color: aliceblue;
+  color: #F6DC6B;
   text-decoration: none;
   padding: 5px;
   transition: transform 0.2s ease-in, 0.2s ease-out;
@@ -51,7 +51,7 @@ main{
 }
 .navList li .a:hover{
   background-color: aliceblue;
-  color: rgb(40, 40, 40);
+  color: #F6DC6B;
   
 }
 .footDiv{
@@ -61,7 +61,7 @@ main{
   width: 100%;
   position: relative;
   background-color: rgb(40,40,40);
-  color: aliceblue;
+  color: #F6DC6B;
 }
 .footText{
   float: left;
@@ -142,6 +142,7 @@ main{
   background-color: rgb(40, 40, 40);
   border-radius: 5px;
   padding: 20px;
+  color:#F6DC6B;
 }
 #contactForm input, #contactForm textarea{
   width: 300px;
