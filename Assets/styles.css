@@ -1,5 +1,5 @@
 body{
-  background-color: #40B4E5;
+  background-color: #3787aa;
 }
 .headDiv{
   display: flex;
@@ -15,6 +15,12 @@ body{
 }
 main{
   margin-top: 150px;
+}
+h2{
+  color:#F6DC6B;
+}
+p{
+  color:#F6DC6B;
 }
 .mainHeader{
   display: inline;
@@ -50,7 +56,7 @@ main{
   margin-top: 20px;
 }
 .navList li .a:hover{
-  background-color: aliceblue;
+  background-color: #F6DC6B;
   color: #F6DC6B;
   
 }
@@ -103,12 +109,12 @@ main{
   background-color: rgb(40, 40, 40);
 }
 #homeLinks li:hover{
-  background-color: aliceblue;
+  background-color: #F6DC6B;
   
   color: rgb(40, 40, 40);
 }
 #homeLinks li a{
-  color: aliceblue;
+  color: #F6DC6B;
   text-decoration: none;
   padding: 15px;
   transition: transform 0.2s ease-in, 0.2s ease-out;
@@ -120,7 +126,7 @@ main{
   transition: transform 0.2s ease-in, 0.2s ease-out;
 }
 #homeLinks li{
-  color: aliceblue;
+  color: #F6DC6B;
   display: inline-block;
   text-decoration: none;
   padding: 15px;
@@ -168,7 +174,7 @@ main{
 }
 .logIn, .signUp{
   float: left;
-  color: aliceblue;
+  color: #F6DC6B;
   background-color: navy;
   width: fit-content;
   height: fit-content;
@@ -193,7 +199,7 @@ main{
   flex-direction: column;
   align-items: center;
   background-color: rgb(40, 40, 40);
-  color: aliceblue;
+  color: #F6DC6B;
 }
 .logInForm input, #signupForm input{
   width: 300px;
