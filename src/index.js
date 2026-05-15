@@ -77,8 +77,10 @@ app.post("/signup", async (req, res) => {
 
     const link = `https://shanksco.org/verify?token=${token}`;
 
-    await resend.emails.send({
-      from: "Shank's Co <onboarding@resend.dev>",
+    console.log("Attempting to send email...");
+
+    const result = await resend.emails.send({
+      from: "Shank's Co <noreply@shanksco.org>",
       to: email,
       subject: "Verify your email",
       html: `
@@ -88,6 +90,9 @@ app.post("/signup", async (req, res) => {
         <p>This link expires in 15 minutes.</p>
       `
     });
+
+    console.log("EMAIL RESULT:");
+    console.log(result);
 
     return res.json({
       success: true,
