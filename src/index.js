@@ -93,24 +93,60 @@ app.post("/signup", async (req, res) => {
 });
 
 // ================= LOGIN =================
+// ================= LOGIN =================
 app.post("/login", async (req, res) => {
-  const { username, password, email } = req.body;
 
-  const user = await collection.findOne({ name: username });
+  try {
 
-  if (!user) return res.redirect("/MainWeb/LoginPages/notFound.html");
+    const { username, password, email } = req.body;
 
-  if (!user.verified) {
-    return res.redirect("/MainWeb/LoginPages/notVerified.html");
+    const user = await collection.findOne({ name: username });
+
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    if (!user.verified) {
+      return res.json({
+        success: false,
+        message: "Verify your email first"
+      });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return res.json({
+        success: false,
+        message: "Incorrect password"
+      });
+    }
+
+    if (user.email !== email) {
+      return res.json({
+        success: false,
+        message: "Incorrect email"
+      });
+    }
+
+    return res.json({
+      success: true
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+
   }
 
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.redirect("/MainWeb/LoginPages/badPassword.html");
-
-  if (user.email !== email) {
-    return res.redirect("/MainWeb/LoginPages/badEmail.html");
-  }
-  return res.redirect("/index.html");
 });
 
 // ================= VERIFY LINK =================
@@ -137,18 +173,33 @@ app.get("/verify", async (req, res) => {
 });
 
 // ================= CHECK VERIFIED =================
+// ================= CHECK VERIFIED =================
 app.post("/check-verified", async (req, res) => {
-  const { username } = req.body;
+  try {
+    const { username } = req.body;
 
-  const user = await collection.findOne({ name: username });
+    const user = await collection.findOne({ name: username });
 
-  if (!user) return res.redirect("/MainWeb/LoginPages/notFound.html");
-  return user.verified ? res.redirect("/index.html") : res.redirect("/MainWeb/LoginPages/notVerified.html");
-});
+    if (!user) {
+      return res.json({
+        success: false,
+        verified: false,
+        message: "User not found"
+      });
+    }
 
-// ================= SERVER =================
-const port = process.env.PORT || 5000;
+    return res.json({
+      success: true,
+      verified: user.verified
+    });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      success: false,
+      verified: false,
+      message: "Server error"
+    });
+  }
 });
