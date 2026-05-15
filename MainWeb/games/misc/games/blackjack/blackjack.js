@@ -40,11 +40,15 @@ suits.forEach(suit => {
 });
 */
 
-
+function bet(){
+    
+}
 function dealCard() {
     const card = cards[Math.floor(Math.random() * cards.length)];
     const img = document.createElement("img");
     img.src = `cards/${card}.png`;
     img.alt = card;
+    img.classList.remove(card)
     gallery.appendChild(img);
 }
+
