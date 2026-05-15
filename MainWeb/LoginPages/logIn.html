@@ -29,7 +29,7 @@
   <main>
     <section class="logInSection">
       <h2>Log In to Your Account</h2>
-      <form id="logInForm" action="https://shanksco.org/login" method="POST" class="logInForm">
+      <form id="logInForm" class="logInForm">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>
 
@@ -52,11 +52,53 @@
   <script src="../../Assets/scripts/usernamePlace.js"></script>
   <script src="../../Assets/scripts/logout.js"></script>
   <script>
-    document.getElementById('logInForm').addEventListener('submit', function(e) {
-      const username = document.getElementById('username').value;
-      if (username) {
-        localStorage.setItem('username', username);
-      }
+    document.addEventListener("DOMContentLoaded", () => {
+
+      const form = document.getElementById("logInForm");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        try {
+
+          const response = await fetch("https://shanksco.org/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              username,
+              email,
+              password
+            })
+          });
+
+          const data = await response.json();
+
+          if (!data.success) {
+            alert(data.message);
+            return;
+          }
+
+          // ONLY SAVE AFTER SUCCESSFUL LOGIN
+          localStorage.setItem("username", username);
+
+          alert("Logged in successfully!");
+
+          window.location.href = "/index.html";
+
+        } catch (err) {
+          console.error(err);
+          alert("Login failed");
+        }
+
+      });
+
     });
-  </script></body>
+  </script>
+</body>
 </html>

@@ -1,0 +1,50 @@
+body{
+    background-color: black;
+}
+.circle{
+    background-color: white;
+    border-radius: 50%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transition: transform 0.2s linear;
+    z-index: 1;
+}
+#ship{
+    z-index: 10000000000000000000000000;
+    width: 100px;
+    height: 100px;
+    position: fixed;
+    top: 80%;
+    left: 50%;
+    transform: rotate(180deg);
+    transition: transform 0.2s linear;
+}
+#startBtn{
+    background-color: lightgreen;
+    width: fit-content;
+    height: fit-content;
+    transition: transform 0.2s linear;
+    border-radius: 10px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    padding: 20px;
+}
+#startBtn:hover{
+    transform: scale(1.1);
+    background-color: green;
+    cursor: pointer;
+}
+.laser{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 50px;
+    height: 50px;
+    z-index: 10000000000000000000000;
+    transition: transform 0.2s linear;
+}
+.enemy{
+    z-index: 1000000000000000;
+}

@@ -28,41 +28,56 @@ function isValidEmail(email) {
 }
 
 // ================= SIGNUP =================
+// ================= SIGNUP =================
 app.post("/signup", async (req, res) => {
-  const { username, password, email } = req.body;
-
-  if (!isValidEmail(email)) {
-    return res.redirect("/MainWeb/LoginPages/invalidEmail.html");
-  }
-
-  const existingUser = await collection.findOne({ name: username });
-  if (existingUser) {
-    return res.redirect("/MainWeb/LoginPages/existingUsername.html");
-  }
-
-  const existingEmail = await collection.findOne({ email });
-  if (existingEmail) {
-    return res.redirect("/MainWeb/LoginPages/existingEmail.html");
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const token = crypto.randomBytes(32).toString("hex");
-  const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
-
-  await collection.insertOne({
-    name: username,
-    email,
-    password: hashedPassword,
-    verificationToken: token,
-    tokenExpiresAt,
-    verified: false
-  });
-
-  const link = `https://shanksco.org/verify?token=${token}`;
 
   try {
-    const result = await resend.emails.send({
+
+    const { username, password, email } = req.body;
+
+    if (!isValidEmail(email)) {
+      return res.json({
+        success: false,
+        message: "Invalid email"
+      });
+    }
+
+    const existingUser = await collection.findOne({ name: username });
+
+    if (existingUser) {
+      return res.json({
+        success: false,
+        message: "Username already exists"
+      });
+    }
+
+    const existingEmail = await collection.findOne({ email });
+
+    if (existingEmail) {
+      return res.json({
+        success: false,
+        message: "Email already exists"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const token = crypto.randomBytes(32).toString("hex");
+
+    const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    await collection.insertOne({
+      name: username,
+      email,
+      password: hashedPassword,
+      verificationToken: token,
+      tokenExpiresAt,
+      verified: false
+    });
+
+    const link = `https://shanksco.org/verify?token=${token}`;
+
+    await resend.emails.send({
       from: "Shank's Co <onboarding@resend.dev>",
       to: email,
       subject: "Verify your email",
@@ -74,43 +89,79 @@ app.post("/signup", async (req, res) => {
       `
     });
 
-    console.log("Email sent:", result);
+    return res.json({
+      success: true,
+      message: "Account created successfully"
+    });
 
   } catch (err) {
-    console.error("EMAIL FAILED:", err);
 
-    return res.json({
+    console.error(err);
+
+    return res.status(500).json({
       success: false,
-      message: "Email failed to send"
+      message: "Server error"
     });
+
   }
 
-  return res.json({
-    success: true,
-    email,
-    token
-  });
 });
 
 // ================= LOGIN =================
+// ================= LOGIN =================
 app.post("/login", async (req, res) => {
-  const { username, password, email } = req.body;
 
-  const user = await collection.findOne({ name: username });
+  try {
 
-  if (!user) return res.redirect("/MainWeb/LoginPages/notFound.html");
+    const { username, password, email } = req.body;
 
-  if (!user.verified) {
-    return res.redirect("/MainWeb/LoginPages/notVerified.html");
+    const user = await collection.findOne({ name: username });
+
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    if (!user.verified) {
+      return res.json({
+        success: false,
+        message: "Verify your email first"
+      });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return res.json({
+        success: false,
+        message: "Incorrect password"
+      });
+    }
+
+    if (user.email !== email) {
+      return res.json({
+        success: false,
+        message: "Incorrect email"
+      });
+    }
+
+    return res.json({
+      success: true
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+
   }
 
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.redirect("/MainWeb/LoginPages/badPassword.html");
-
-  if (user.email !== email) {
-    return res.redirect("/MainWeb/LoginPages/badEmail.html");
-  }
-  return res.redirect("/index.html");
 });
 
 // ================= VERIFY LINK =================
@@ -137,18 +188,40 @@ app.get("/verify", async (req, res) => {
 });
 
 // ================= CHECK VERIFIED =================
+// ================= CHECK VERIFIED =================
 app.post("/check-verified", async (req, res) => {
-  const { username } = req.body;
+  try {
+    
+    const { username } = req.body;
 
-  const user = await collection.findOne({ name: username });
+    const user = await collection.findOne({ name: username });
 
-  if (!user) return res.redirect("/MainWeb/LoginPages/notFound.html");
-  return user.verified ? res.redirect("/index.html") : res.redirect("/MainWeb/LoginPages/notVerified.html");
+    if (!user) {
+      return res.json({
+        success: false,
+        verified: false,
+        message: "User not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      verified: user.verified
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      success: false,
+      verified: false,
+      message: "Server error"
+    });
+  
+  }
 });
-
-// ================= SERVER =================
 const port = process.env.PORT || 5000;
 
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`Server running on port ${port}`);
 });
