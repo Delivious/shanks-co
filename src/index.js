@@ -176,6 +176,7 @@ app.get("/verify", async (req, res) => {
 // ================= CHECK VERIFIED =================
 app.post("/check-verified", async (req, res) => {
   try {
+    
     const { username } = req.body;
 
     const user = await collection.findOne({ name: username });
@@ -201,5 +202,11 @@ app.post("/check-verified", async (req, res) => {
       verified: false,
       message: "Server error"
     });
+  
   }
+});
+const port = process.env.PORT || 5000;
+
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server running on port ${port}`);
 });
