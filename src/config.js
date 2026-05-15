@@ -17,6 +17,7 @@ try {
   collection = db.collection("users");
 
   console.log("Database Connected Successfully");
+  console.log("RESEND_API_KEY:", process.env.RESEND_API_KEY);
 } catch (error) {
   console.error("Database Connection Failed:");
   console.error(error);
