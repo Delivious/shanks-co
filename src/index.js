@@ -101,11 +101,11 @@ app.post("/signup", async (req, res) => {
 
   } catch (err) {
 
+    console.error("SIGNUP ERROR:");
     console.error(err);
-
     return res.status(500).json({
       success: false,
-      message: "Server error"
+      message: err.message
     });
 
   }

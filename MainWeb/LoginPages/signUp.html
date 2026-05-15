@@ -51,53 +51,60 @@
   <script src="../../Assets/scripts/logout.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-    const signupForm = document.getElementById("signupForm");
 
-    if (!signupForm) {
-        console.error("Signup form not found");
-        return;
-    }
+        const signupForm = document.getElementById("signupForm");
 
-    signupForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        alert("Submitting signup form...");
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-        const email = document.getElementById("email").value;
+        signupForm.addEventListener("submit", async (event) => {
 
-        try {
-            const response = await fetch("https://shanksco.org/signup", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    username,
-                    password,
-                    email
-                })
-            });
+            event.preventDefault();
 
-            const data = await response.json();
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const email = document.getElementById("email").value;
 
-            if (!data.success) {
-                alert(data.message);
-                return;
+            try {
+
+                const response = await fetch("https://shanksco.org/signup", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        email
+                    })
+                });
+
+                console.log("STATUS:", response.status);
+
+                const text = await response.text();
+
+                console.log("RAW RESPONSE:");
+                console.log(text);
+
+                const data = JSON.parse(text);
+
+                if (!data.success) {
+                    alert(data.message);
+                    return;
+                }
+
+                alert("Account created! Check your email.");
+
+                window.location.href = "/MainWeb/LoginPages/logIn.html";
+
+            } catch (error) {
+
+                console.error("Signup error:", error);
+
+                alert("Something went wrong.");
+
             }
 
-            // ================= SAVE LOGIN INFO =================
-            
+        });
 
-            alert("Account created! Check your email.");
-
-            window.location.href = "/MainWeb/LoginPages/logIn.html";
-
-        } catch (error) {
-            console.error("Signup error:", error);
-            alert("Something went wrong.");
-        }
     });
-});
   </script>
 </body>
 </html>
