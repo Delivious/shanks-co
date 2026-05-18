@@ -306,6 +306,13 @@ a{
   transform: scale(1.1);
   background-color: rgba(40, 40, 40, 0.4);
 }
+.username{
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1001;
+  color: white;
+}
 @media screen and (max-width: 960px) {
   .logIn{
     position: fixed;
@@ -361,7 +368,9 @@ a{
     height: 125px;
     object-fit: cover; /* optional, keeps it looking nice */
   }
-
+  .username{
+    top: 135px;
+  }
   .mainHeader {
     width: 100%;
     text-align: center;
