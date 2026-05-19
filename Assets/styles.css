@@ -353,43 +353,24 @@ a{
 @media screen and (max-width: 750px) {
   .headDiv {
     flex-direction: column;
-    height: 10%;
-  }
-
-  .aImg {
-    display: block;
-    width: 100%;
-    flex: none;
+    height: auto;
+    align-items: center;
   }
 
   .imgHead {
-    display: block;
     width: 100%;
-    height: 125px;
-    object-fit: cover; /* optional, keeps it looking nice */
+    height: 80px;
+    object-fit: contain;
   }
-  .username{
-    top: 135px;
-  }
+
   .mainHeader {
     width: 100%;
     text-align: center;
     font-size: 120%;
   }
-  #homeP1, #homeP2, #homeP3{
-    font-size: 110%;
-  }
-  #homeHead1, #homeHead2, #homeHead3{
-    font-size: 200%;
-  }
-  .gameDiv {
-    width: 150px;
-    height: 150px;
-  }
 
-  .gameImage {
-    width: 150px;
-    height: 150px;
+  .navList li {
+    margin-top: 0;
+    padding: 5px;
   }
-  
 }
