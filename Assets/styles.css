@@ -353,7 +353,7 @@ a{
 @media screen and (max-width: 750px) {
   .headDiv {
     flex-direction: column;
-    height: 20%;
+    height: 10%;
   }
 
   .aImg {
