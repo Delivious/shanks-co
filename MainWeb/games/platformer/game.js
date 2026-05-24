@@ -1,5 +1,9 @@
-const socket = io();
 const username = localStorage.getItem("username") || `Guest-${Math.random().toString(36).slice(2, 6)}`;
+const socket = typeof io === "function" && window.location.protocol !== "file:" ? io() : {
+  on: () => {},
+  emit: () => {},
+  connected: false
+};
 
 const canvas = document.getElementById("platformerCanvas");
 const ctx = canvas.getContext("2d");
@@ -64,6 +68,14 @@ function setRoomStatus(message, isError = false) {
   roomStatus.classList.toggle("hidden", !message);
   roomStatus.style.borderColor = isError ? "rgba(248, 113, 113, 0.35)" : "rgba(16, 185, 129, 0.18)";
   roomStatus.style.background = isError ? "rgba(248, 113, 113, 0.12)" : "";
+}
+
+function showProtocolWarning() {
+  if (window.location.protocol === "file:") {
+    setRoomStatus("Platformer Race must be loaded from the local webserver, not directly from the file system.", true);
+  } else if (!window.io) {
+    setRoomStatus("Socket.IO failed to load. Make sure your server is running.", true);
+  }
 }
 
 function updateRoomList(rooms) {
@@ -409,4 +421,5 @@ window.addEventListener("keyup", (event) => {
   if (event.key === "w" || event.key === "ArrowUp") controls.jump = false;
 });
 
+showProtocolWarning();
 render();
