@@ -24,6 +24,7 @@ app.use(express.static(path.join(__dirname, "..")));
 const server = http.createServer(app);
 const io = new Server(server);
 const rooms = {};
+const platformerRooms = {};
 
 function sanitizeRoom(room) {
   return {
@@ -35,12 +36,33 @@ function sanitizeRoom(room) {
   };
 }
 
+function sanitizePlatformerRoom(room) {
+  return {
+    roomId: room.roomId,
+    roomName: room.roomName,
+    host: room.host,
+    guests: room.guests,
+    status: room.status,
+    targetScore: room.targetScore,
+    scores: room.scores,
+    roundWinner: room.roundWinner || null
+  };
+}
+
 function getRoomList() {
   return Object.values(rooms).map(sanitizeRoom);
 }
 
+function getPlatformerRoomList() {
+  return Object.values(platformerRooms).map(sanitizePlatformerRoom);
+}
+
 function broadcastRoomList() {
   io.emit("room-list", getRoomList());
+}
+
+function broadcastPlatformerRoomList() {
+  io.emit("platformer-room-list", getPlatformerRoomList());
 }
 
 function computeResult(hostMove, guestMove) {
@@ -74,6 +96,42 @@ function leaveRoom(roomId, username, socket) {
     room.status = "waiting";
     io.to(room.hostId).emit("room-updated", sanitizeRoom(room));
     broadcastRoomList();
+  }
+}
+
+function resetPlatformerRound(room) {
+  room.roundWinner = null;
+  room.positions = {};
+}
+
+function closePlatformerRoom(roomId, reason) {
+  const room = platformerRooms[roomId];
+  if (!room) return;
+  Object.values(room.playerIds).forEach((id) => {
+    io.to(id).emit("platformer-room-closed", { reason });
+  });
+  delete platformerRooms[roomId];
+  broadcastPlatformerRoomList();
+}
+
+function leavePlatformerRoom(roomId, username) {
+  const room = platformerRooms[roomId];
+  if (!room) return;
+
+  if (room.host === username) {
+    closePlatformerRoom(roomId, "Host left the room.");
+    return;
+  }
+
+  const guestIndex = room.guests.indexOf(username);
+  if (guestIndex !== -1) {
+    room.guests.splice(guestIndex, 1);
+    delete room.playerIds[username];
+    room.status = room.guests.length >= 1 ? "ready" : "waiting";
+    Object.values(room.playerIds).forEach((id) => {
+      io.to(id).emit("platformer-room-updated", sanitizePlatformerRoom(room));
+    });
+    broadcastPlatformerRoomList();
   }
 }
 
@@ -155,6 +213,154 @@ io.on("connection", (socket) => {
     broadcastRoomList();
   });
 
+  socket.on("platformer:get-rooms", () => {
+    socket.emit("platformer-room-list", getPlatformerRoomList());
+  });
+
+  socket.on("platformer:create-room", ({ roomName, username, targetScore }) => {
+    if (!username) {
+      socket.emit("platformer-room-error", "Login required to create a room.");
+      return;
+    }
+
+    const roomId = crypto.randomBytes(6).toString("hex");
+    const normalizedScore = Number(targetScore) || 7;
+    const scoreGoal = Math.min(15, Math.max(5, normalizedScore));
+
+    platformerRooms[roomId] = {
+      roomId,
+      roomName: roomName || `${username}'s race`,
+      host: username,
+      guests: [],
+      status: "waiting",
+      targetScore: scoreGoal,
+      scores: { [username]: 0 },
+      roundWinner: null,
+      playerIds: { [username]: socket.id },
+      positions: {}
+    };
+
+    socket.emit("platformer-room-created", sanitizePlatformerRoom(platformerRooms[roomId]));
+    broadcastPlatformerRoomList();
+  });
+
+  socket.on("platformer:join-room", ({ roomId, username }) => {
+    const room = platformerRooms[roomId];
+    if (!room) {
+      socket.emit("platformer-room-error", "Room does not exist.");
+      return;
+    }
+    if (room.guests.length >= 3) {
+      socket.emit("platformer-room-error", "Room is already full.");
+      return;
+    }
+    if (room.host === username || room.guests.includes(username)) {
+      socket.emit("platformer-room-error", "You are already in this room.");
+      return;
+    }
+
+    room.guests.push(username);
+    room.playerIds[username] = socket.id;
+    room.scores[username] = room.scores[username] || 0;
+    room.status = "ready";
+
+    socket.emit("platformer-room-joined", sanitizePlatformerRoom(room));
+    Object.values(room.playerIds).forEach((id) => {
+      io.to(id).emit("platformer-room-updated", sanitizePlatformerRoom(room));
+    });
+    broadcastPlatformerRoomList();
+  });
+
+  socket.on("platformer:start-game", ({ roomId, username }) => {
+    const room = platformerRooms[roomId];
+    if (!room) {
+      socket.emit("platformer-room-error", "Room not found.");
+      return;
+    }
+    if (room.host !== username) {
+      socket.emit("platformer-room-error", "Only the host can start the race.");
+      return;
+    }
+    if (room.guests.length < 1) {
+      socket.emit("platformer-room-error", "At least one other player must join.");
+      return;
+    }
+
+    room.status = "playing";
+    resetPlatformerRound(room);
+
+    Object.values(room.playerIds).forEach((id) => {
+      io.to(id).emit("platformer-game-started", sanitizePlatformerRoom(room));
+    });
+    broadcastPlatformerRoomList();
+  });
+
+  socket.on("platformer:update-position", ({ roomId, username, position }) => {
+    const room = platformerRooms[roomId];
+    if (!room || room.status !== "playing") {
+      return;
+    }
+    if (!room.playerIds[username]) {
+      return;
+    }
+
+    room.positions[username] = position;
+    Object.values(room.playerIds).forEach((id) => {
+      io.to(id).emit("platformer-position-update", {
+        roomId: room.roomId,
+        positions: room.positions
+      });
+    });
+  });
+
+  socket.on("platformer:finish-line", ({ roomId, username }) => {
+    const room = platformerRooms[roomId];
+    if (!room || room.status !== "playing" || room.roundWinner) {
+      return;
+    }
+    if (!room.playerIds[username]) {
+      return;
+    }
+
+    room.roundWinner = username;
+    room.scores[username] = (room.scores[username] || 0) + 1;
+
+    const payload = {
+      roomId: room.roomId,
+      winner: username,
+      scores: room.scores,
+      targetScore: room.targetScore
+    };
+
+    Object.values(room.playerIds).forEach((id) => {
+      io.to(id).emit("platformer-round-ended", payload);
+    });
+
+    const hasMatchWinner = room.scores[username] >= room.targetScore;
+    if (hasMatchWinner) {
+      Object.values(room.playerIds).forEach((id) => {
+        io.to(id).emit("platformer-game-over", {
+          roomId: room.roomId,
+          winner: username,
+          scores: room.scores,
+          targetScore: room.targetScore
+        });
+      });
+      closePlatformerRoom(roomId, `${username} won the match!`);
+      return;
+    }
+
+    room.status = "ready";
+    Object.values(room.playerIds).forEach((id) => {
+      io.to(id).emit("platformer-room-updated", sanitizePlatformerRoom(room));
+    });
+    broadcastPlatformerRoomList();
+  });
+
+  socket.on("platformer:leave-room", ({ roomId, username }) => {
+    leavePlatformerRoom(roomId, username);
+  });
+
   socket.on("player-move", ({ roomId, username, choice }) => {
     const room = rooms[roomId];
     if (!room || room.status !== "playing") {
@@ -209,6 +415,27 @@ io.on("connection", (socket) => {
         room.status = "waiting";
         io.to(room.hostId).emit("room-updated", sanitizeRoom(room));
         broadcastRoomList();
+      }
+    });
+
+    Object.values(platformerRooms).forEach((room) => {
+      const disconnectedPlayer = Object.entries(room.playerIds).find(([, id]) => id === socket.id);
+      if (!disconnectedPlayer) return;
+
+      const [username] = disconnectedPlayer;
+      if (room.host === username) {
+        closePlatformerRoom(room.roomId, "Host left the room.");
+      } else {
+        const guestIndex = room.guests.indexOf(username);
+        if (guestIndex !== -1) {
+          room.guests.splice(guestIndex, 1);
+          delete room.playerIds[username];
+          room.status = room.guests.length >= 1 ? "ready" : "waiting";
+          Object.values(room.playerIds).forEach((id) => {
+            io.to(id).emit("platformer-room-updated", sanitizePlatformerRoom(room));
+          });
+          broadcastPlatformerRoomList();
+        }
       }
     });
   });

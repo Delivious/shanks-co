@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platformer Race</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="platformer-shell">
+    <section class="hero-panel">
+      <h1>Platformer Race</h1>
+      <p>Rally up to 4 players. Create a room, join a match, and race to the finish line. First to reach the target score wins.</p>
+    </section>
+
+    <section class="room-panel">
+      <div class="room-box">
+        <h2>Create a room</h2>
+        <input id="roomNameInput" type="text" placeholder="Room name" maxlength="24">
+        <label for="targetScoreInput">Target score</label>
+        <select id="targetScoreInput">
+          <option value="5">5 points</option>
+          <option value="6">6 points</option>
+          <option value="7" selected>7 points</option>
+          <option value="8">8 points</option>
+          <option value="9">9 points</option>
+          <option value="10">10 points</option>
+          <option value="11">11 points</option>
+          <option value="12">12 points</option>
+          <option value="13">13 points</option>
+          <option value="14">14 points</option>
+          <option value="15">15 points</option>
+        </select>
+        <button id="createRoomBtn" type="button">Create room</button>
+      </div>
+
+      <div class="room-box">
+        <h2>Open rooms</h2>
+        <div id="roomList" class="room-list">Loading rooms...</div>
+      </div>
+    </section>
+
+    <section id="roomStatus" class="room-status hidden"></section>
+
+    <section id="gamePanel" class="game-panel hidden">
+      <div class="game-toolbar">
+        <div>
+          <div class="room-label">Room: <span id="roomTitle">—</span></div>
+          <div class="room-meta">Host: <span id="hostName">—</span></div>
+          <div class="room-meta">Target: <span id="targetScore">7</span></div>
+        </div>
+        <div class="toolbar-actions">
+          <button id="startGameBtn" type="button">Start race</button>
+          <button id="leaveRoomBtn" type="button" class="secondary">Leave room</button>
+        </div>
+      </div>
+
+      <div class="status-panel">
+        <div id="gameStatus" class="status-text">Waiting for players...</div>
+        <div id="playerCount" class="status-text"></div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="platformerCanvas" width="1200" height="420"></canvas>
+      </div>
+
+      <div class="score-panel">
+        <div class="score-header">Scores</div>
+        <div id="scoreboard" class="scoreboard"></div>
+      </div>
+
+      <div class="controls-hint">
+        <p><strong>Controls:</strong> A / D to move, W to jump.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
