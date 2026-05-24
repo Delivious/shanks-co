@@ -36,6 +36,8 @@ let lastPositionSend = 0;
 let finishedRound = false;
 let showNotification = "";
 let isHost = false;
+let DPR = Math.max(1, window.devicePixelRatio || 1);
+let resizePending = false;
 
 function createPlayerState() {
   return {
@@ -114,6 +116,27 @@ function resetLocalState() {
   ensurePlayerStates();
 }
 
+function resizeCanvas() {
+  // Set canvas size to match CSS size, but use devicePixelRatio for crispness
+  const cssW = canvas.clientWidth || 1200;
+  const cssH = canvas.clientHeight || 420;
+  DPR = Math.max(1, window.devicePixelRatio || 1);
+  canvas.width = Math.floor(cssW * DPR);
+  canvas.height = Math.floor(cssH * DPR);
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+
+function scheduleResize() {
+  if (resizePending) return;
+  resizePending = true;
+  requestAnimationFrame(() => {
+    resizePending = false;
+    resizeCanvas();
+  });
+}
+
 function ensurePlayerStates() {
   if (!currentRoom) return;
   const orderedPlayers = [currentRoom.host, ...currentRoom.guests].slice(0, 4);
@@ -148,6 +171,8 @@ function openRoom(room) {
   ensurePlayerStates();
   updateRoomSummary();
   updateActionButtons();
+  // initialize canvas size for this session
+  scheduleResize();
 }
 
 function updateRoomSummary() {
@@ -256,40 +281,74 @@ function sendPositionUpdate(now) {
 }
 
 function drawWorld() {
-  const width = canvas.width;
-  const height = canvas.height;
+  const cssW = canvas.clientWidth;
+  const cssH = canvas.clientHeight;
+  ctx.clearRect(0, 0, cssW, cssH);
+  // Background
+  const grad = ctx.createLinearGradient(0, 0, 0, cssH);
+  grad.addColorStop(0, '#07101c');
+  grad.addColorStop(1, '#05070c');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, cssW, cssH);
 
-  ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = "#07101c";
-  ctx.fillRect(0, 0, width, height);
+  // Camera follows local player
+  const cameraX = Math.min(Math.max(myState.x - cssW * 0.28, 0), worldWidth - cssW);
 
-  const cameraX = Math.min(Math.max(myState.x - width * 0.3, 0), worldWidth - width);
-
+  // Draw lanes
   for (let i = 0; i < laneY.length; i += 1) {
-    const y = laneY[i] + 40;
-    ctx.strokeStyle = "rgba(255,255,255,0.08)";
+    const y = laneY[i] + 40 - 20; // adjust for canvas position
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
+    ctx.lineTo(cssW, y);
     ctx.stroke();
   }
 
+  // Draw finish line
   const finishScreenX = finishX - cameraX;
-  ctx.fillStyle = "#e879f9";
-  ctx.fillRect(finishScreenX, 0, 10, height);
-  ctx.fillStyle = "rgba(232, 121, 249, 0.05)";
-  ctx.fillRect(finishScreenX, 0, 80, height);
+  ctx.fillStyle = '#e879f9';
+  ctx.fillRect(finishScreenX, 0, 6, cssH);
+  ctx.fillStyle = 'rgba(232,121,249,0.06)';
+  ctx.fillRect(finishScreenX, 0, 60, cssH);
 
+  // Draw players (with interpolation)
   Object.values(players).forEach((player) => {
-    const x = player.x - cameraX + 30;
+    // interpolate if remote
+    const displayX = (player.interpX !== undefined) ? player.interpX : player.x;
+    const x = displayX - cameraX + 30;
     const y = player.y;
-    ctx.fillStyle = player.color;
-    ctx.fillRect(x, y - player.height, player.width, player.height);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "14px Inter, sans-serif";
-    ctx.fillText(player.name === username ? `${player.name} (you)` : player.name, x - 6, y - player.height - 10);
+    const w = player.width || 36;
+    const h = player.height || 46;
+
+    // shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    roundRect(ctx, x + 4, y - h + 6, w, h, 6, true, false);
+
+    // body
+    ctx.fillStyle = player.color || '#60a5fa';
+    roundRect(ctx, x, y - h, w, h, 6, true, false);
+
+    // name
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(player.name === username ? `${player.name} (you)` : player.name, x - 6, y - h - 8);
   });
+}
+
+// helper: rounded rect
+function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+  if (typeof r === 'undefined') r = 5;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+  if (fill) ctx.fill();
+  if (stroke) ctx.stroke();
 }
 
 function render() {
@@ -309,6 +368,15 @@ function render() {
       name: username
     };
   }
+
+  // interpolate remote players toward their target positions
+  const interpSpeed = 8; // higher = snappier
+  Object.values(players).forEach((p) => {
+    if (p.name === username) return;
+    if (p.interpX === undefined) p.interpX = p.x;
+    // simple lerp
+    p.interpX += (p.x - p.interpX) * Math.min(1, interpSpeed * delta);
+  });
 
   drawWorld();
 
@@ -357,19 +425,24 @@ socket.on("platformer-game-started", (room) => {
 
 socket.on("platformer-position-update", ({ roomId, positions }) => {
   if (!currentRoom || currentRoom.roomId !== roomId) return;
+  const now = performance.now();
   Object.entries(positions).forEach(([name, position]) => {
     if (name === username) return;
     if (!players[name]) {
       players[name] = {
         x: position.x,
+        interpX: position.x,
         y: position.y,
         lane: Object.keys(players).length,
         color: playerColors[Object.keys(players).length % playerColors.length],
-        name
+        name,
+        lastUpdate: now
       };
     } else {
+      // smooth interpolate
+      players[name].lastX = players[name].x;
       players[name].x = position.x;
-      players[name].y = position.y;
+      players[name].lastUpdate = now;
     }
   });
 });
@@ -421,5 +494,9 @@ window.addEventListener("keyup", (event) => {
   if (event.key === "w" || event.key === "ArrowUp") controls.jump = false;
 });
 
+window.addEventListener('resize', scheduleResize);
+window.addEventListener('orientationchange', scheduleResize);
+
 showProtocolWarning();
+scheduleResize();
 render();
