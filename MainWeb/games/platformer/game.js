@@ -144,8 +144,8 @@ function openRoom(room) {
   hostName.textContent = room.host;
   targetScoreLabel.textContent = room.targetScore;
   setRoomStatus("You are in room: " + room.roomName);
-  ensurePlayerStates();
   resetLocalState();
+  ensurePlayerStates();
   updateRoomSummary();
   updateActionButtons();
 }
