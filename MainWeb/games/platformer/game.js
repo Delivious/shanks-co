@@ -129,7 +129,7 @@ function generatePlatforms() {
   // generate ascending platforms up to finishY
   let y = worldHeight - 140;
   const gapMin = 100;
-  const gapMax = 170;
+  const gapMax = 130;
   let prevX = worldWidth / 2 - 90;
   let prevWidth = 180;
   while (y > finishY + 40) {
@@ -151,7 +151,7 @@ function generatePlatforms() {
     platforms.push({ x: px, y: y, width: pw, height: 12 });
     prevX = px;
     prevWidth = pw;
-    y -= gapMin + Math.floor(Math.random() * (gapMax - gapMin));
+    y -= gapMin + Math.floor(Math.random() * (Math.max(0, gapMax - gapMin) - 40));
   }
 
   // top finishing platform
@@ -341,11 +341,14 @@ function updateProjectiles(delta) {
     const spawnY = Math.min(Math.max(cameraY + 80 + Math.random() * (cssH - 160), finishY + 20), worldHeight - 60);
     const fromLeft = Math.random() < 0.5;
     const speed = 260 + Math.random() * 80;
+    const gunX = fromLeft ? -24 : worldWidth + 22;
     bullets.push({
       x: fromLeft ? -20 : worldWidth + 20,
       y: spawnY,
       vx: fromLeft ? speed : -speed,
-      radius: 10
+      radius: 10,
+      gunX,
+      side: fromLeft ? 'left' : 'right'
     });
   }
 

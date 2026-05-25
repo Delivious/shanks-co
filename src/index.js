@@ -87,7 +87,7 @@ function generatePlatformerLayout(seed) {
 
   let y = PLATFORMER_WORLD_HEIGHT - 140;
   const gapMin = 100;
-  const gapMax = 160;
+  const gapMax = 120;
   // start roughly centered
   let prevPw = 190;
   let prevPx = Math.floor(PLATFORMER_WORLD_WIDTH / 2 - prevPw / 2);
