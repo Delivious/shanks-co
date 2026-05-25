@@ -1,0 +1,15 @@
+#game {
+  display: block;
+  margin: 12px auto;
+  border: 4px solid #222;
+  background: #88c;
+}
+.frogger-shell{
+  max-width: 720px;
+  margin: 8px auto;
+  text-align: center;
+  font-family: system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+}
+.hint{color:#666;margin-top:0;margin-bottom:6px}
+.hud{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:8px}
+.hud button{padding:6px 10px}
