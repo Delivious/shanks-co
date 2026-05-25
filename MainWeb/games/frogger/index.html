@@ -8,11 +8,12 @@
 </head>
 <body>
   <main class="frogger-shell">
-    <h1>Frogger</h1>
-    <p class="hint">Move with Arrow keys or A/D/W/S. Reach the water at the top.</p>
-    <canvas id="game" width="540" height="600" aria-label="Frogger game"></canvas>
+    <h1>Tax Evasion: Arcade (Fictional Game)</h1>
+    <p class="hint">Collect mysterious "bundles" and try to deposit them in the Vault while avoiding Auditors. This is a purely fictional arcade game — do not attempt unlawful activity in real life.</p>
+    <canvas id="game" width="540" height="600" aria-label="Tax evasion simulator (game)"></canvas>
     <div class="hud">
-      <span id="lives">Lives: 3</span>
+      <span id="reputation">Reputation: 3</span>
+      <span id="stash">Unreported stash: $0</span>
       <span id="score">Score: 0</span>
       <button id="restart">Restart</button>
     </div>
@@ -35,65 +36,97 @@
       { row: 7, speed: 2.0, dir: 1, color: '#c33' }
     ];
 
-    let cars = [];
-    let lastSpawn = 0;
+    let cars = []; // auditors
+    let tokens = []; // unreported bundles
+    let lastSpawnAuditor = 0;
+    let lastSpawnToken = 0;
     let frog = { col: Math.floor(COLS/2), row: ROWS-1, w: TILE*0.8, h: TILE*0.8 };
-    let lives = 3;
+    let reputation = 3;
+    let stash = 0;
     let score = 0;
     let playing = true;
 
-    const livesEl = document.getElementById('lives');
+    const repEl = document.getElementById('reputation');
+    const stashEl = document.getElementById('stash');
     const scoreEl = document.getElementById('score');
     document.getElementById('restart').addEventListener('click', resetGame);
 
     function resetGame(){
       cars = [];
+      tokens = [];
       frog.col = Math.floor(COLS/2);
       frog.row = ROWS-1;
-      lives = 3;
+      reputation = 3;
+      stash = 0;
       score = 0;
       playing = true;
       updateHud();
     }
 
     function updateHud(){
-      livesEl.textContent = 'Lives: ' + lives;
+      repEl.textContent = 'Reputation: ' + reputation;
+      stashEl.textContent = 'Unreported stash: $' + stash;
       scoreEl.textContent = 'Score: ' + score;
     }
 
-    function spawnCars(dt){
-      // spawn cars per lane with spacing
-      lastSpawn += dt;
-      if (lastSpawn < 400) return;
-      lastSpawn = 0;
-      lanes.forEach((lane, idx) => {
-        const y = lane.row * TILE + (TILE - TILE*0.6)/2;
-        // probability to spawn depending on speed
-        if (Math.random() < 0.6) {
-          const lengthTiles = 1 + Math.floor(Math.random()*2);
-          const w = lengthTiles * TILE * 0.9;
-          let x = lane.dir === 1 ? -w - Math.random()*200 : canvas.width + Math.random()*200;
-          cars.push({ x, y, w, h: TILE*0.6, speed: lane.speed * (0.6 + Math.random()*0.9), dir: lane.dir, laneIdx: idx });
-        }
-      });
+    function spawnAuditors(dt){
+      // spawn auditors (cars) per lane with spacing
+      lastSpawnAuditor += dt;
+      if (lastSpawnAuditor >= 400){
+        lastSpawnAuditor = 0;
+        lanes.forEach((lane, idx) => {
+          const y = lane.row * TILE + (TILE - TILE*0.6)/2;
+          if (Math.random() < 0.6) {
+            const lengthTiles = 1 + Math.floor(Math.random()*2);
+            const w = lengthTiles * TILE * 0.9;
+            let x = lane.dir === 1 ? -w - Math.random()*200 : canvas.width + Math.random()*200;
+            cars.push({ x, y, w, h: TILE*0.6, speed: lane.speed * (0.6 + Math.random()*0.9), dir: lane.dir, laneIdx: idx });
+          }
+        });
+      }
+    }
+
+    function spawnTokens(dt){
+      // spawn collectible bundles on the road occasionally
+      lastSpawnToken += dt;
+      if (lastSpawnToken < 800) return;
+      lastSpawnToken = 0;
+      // pick a random lane and column
+      const laneIdx = 1 + Math.floor(Math.random()*7); // lanes 1..7
+      const col = Math.floor(Math.random()*COLS);
+      const x = col * TILE + (TILE - TILE*0.4)/2;
+      const y = laneIdx * TILE + (TILE - TILE*0.4)/2;
+      tokens.push({ x, y, w: TILE*0.4, h: TILE*0.4, value: 50 + Math.floor(Math.random()*150) });
     }
 
     function update(dt){
       if (!playing) return;
       spawnCars(dt);
-      // move cars
+      // move auditors
       cars.forEach(c=>{
         c.x += c.dir * c.speed * (dt/16);
       });
-      // remove offscreen cars
+      // spawn collectibles
+      spawnTokens(dt);
+      // remove offscreen auditors
       cars = cars.filter(c=> c.x + c.w > -300 && c.x < canvas.width + 300);
 
-      // collision check
+      // check token collection first
       const frogRect = {
         x: frog.col*TILE + (TILE - frog.w)/2,
         y: frog.row*TILE + (TILE - frog.h)/2,
         w: frog.w, h: frog.h
       };
+      for (let i = tokens.length-1; i>=0; i--){
+        const t = tokens[i];
+        if (rectsOverlap(frogRect, t)){
+          stash += t.value;
+          tokens.splice(i,1);
+          updateHud();
+        }
+      }
+
+      // collision with auditors (being investigated)
       let hit = false;
       cars.forEach(c=>{
         if (rectsOverlap(frogRect, c) && frog.row >=1 && frog.row <=7){
@@ -101,7 +134,7 @@
         }
       });
       if (hit){
-        loseLife();
+        caughtByAuditor();
       }
 
       // win check
@@ -112,12 +145,13 @@
       }
     }
 
-    function loseLife(){
-      lives--;
+    function caughtByAuditor(){
+      reputation--;
+      stash = 0; // confiscated in-game
       updateHud();
-      if (lives <=0){
+      if (reputation <= 0){
         playing = false;
-        setTimeout(()=> alert('Game over! Score: ' + score), 50);
+        setTimeout(()=> alert('Investigation ended — game over. Score: ' + score + '\n\nThis was a fictional game.'), 50);
       }
       resetFrogToStart();
     }
@@ -149,15 +183,23 @@
       ctx.fillStyle = '#228B22';
       ctx.fillRect(0, 8*TILE, canvas.width, TILE*2);
 
-      // cars (sprite-like)
-      cars.forEach(c=>{
-        drawCar(c);
-      });
+      // tokens (bundles)
+      tokens.forEach(t=> drawToken(t));
+
+      // auditors (sprite-like)
+      cars.forEach(c=> drawCar(c));
 
       // frog (sprite)
       const fx = frog.col*TILE + (TILE - frog.w)/2;
       const fy = frog.row*TILE + (TILE - frog.h)/2;
       drawFrog(fx + frog.w/2, fy + frog.h/2, frog.w*0.5);
+    }
+
+    function drawToken(t){
+      ctx.fillStyle = '#ffd24d';
+      ctx.beginPath(); ctx.arc(t.x + t.w/2, t.y + t.h/2, t.w*0.5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#000'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('$' + t.value, t.x + t.w/2, t.y + t.h/2);
     }
 
     function drawCar(c){
