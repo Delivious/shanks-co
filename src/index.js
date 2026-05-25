@@ -82,17 +82,18 @@ function createSeededRandom(seed) {
 function generatePlatformerLayout(seed) {
   const random = createSeededRandom(seed);
   const platforms = [];
+  const powerups = [];
   // ground
   platforms.push({ x: 0, y: PLATFORMER_WORLD_HEIGHT - 20, width: PLATFORMER_WORLD_WIDTH, height: 20 });
 
   let y = PLATFORMER_WORLD_HEIGHT - 140;
-  const gapMin = 100;
+  const gapMin = 90;
   const gapMax = 120;
   // start roughly centered
   let prevPw = 190;
   let prevPx = Math.floor(PLATFORMER_WORLD_WIDTH / 2 - prevPw / 2);
 
-  while (y > PLATFORMER_FINISH_Y + 60) {
+  while (y > PLATFORMER_FINISH_Y + 70) {
     const pw = 150 + Math.floor(random() * 110);
     const maxShift = 180; // limit how far next platform can be horizontally
     const shift = Math.floor((random() * 2 - 1) * maxShift);
@@ -110,14 +111,34 @@ function generatePlatformerLayout(seed) {
     }
 
     platforms.push({ x: px, y, width: pw, height: 14 });
+
+    if (random() < 0.3) {
+      const powerupTypes = ['bomb', 'doubleFire', 'invincibility', 'jumpBoost'];
+      const chosen = powerupTypes[Math.floor(random() * powerupTypes.length)];
+      const powerupX = px + random() * Math.max(0, pw - 16);
+      powerups.push({
+        x: Math.max(0, Math.min(powerupX, PLATFORMER_WORLD_WIDTH - 16)),
+        y: y - 30,
+        width: 16,
+        height: 16,
+        type: chosen,
+        collected: false
+      });
+    }
+
     prevPx = px;
     prevPw = pw;
 
     y -= gapMin + Math.floor(random() * (gapMax - gapMin));
   }
 
+  const lastY = platforms[platforms.length - 1]?.y || PLATFORMER_WORLD_HEIGHT - 140;
+  if (lastY - PLATFORMER_FINISH_Y > 110) {
+    platforms.push({ x: PLATFORMER_WORLD_WIDTH / 2 - 120, y: PLATFORMER_FINISH_Y + 70, width: 180, height: 14 });
+  }
+
   platforms.push({ x: PLATFORMER_WORLD_WIDTH / 2 - 140, y: PLATFORMER_FINISH_Y, width: 280, height: 16 });
-  return platforms;
+  return { platforms, powerups };
 }
 
 function computeResult(hostMove, guestMove) {
@@ -344,12 +365,15 @@ io.on("connection", (socket) => {
     room.status = "playing";
     resetPlatformerRound(room);
     room.platformSeed = crypto.randomBytes(4).toString("hex");
-    room.platforms = generatePlatformerLayout(room.platformSeed);
+    const level = generatePlatformerLayout(room.platformSeed);
+    room.platforms = level.platforms;
+    room.powerups = level.powerups;
 
     Object.values(room.playerIds).forEach((id) => {
       io.to(id).emit("platformer-game-started", {
         ...sanitizePlatformerRoom(room),
         platforms: room.platforms,
+        powerups: room.powerups,
         platformSeed: room.platformSeed
       });
     });

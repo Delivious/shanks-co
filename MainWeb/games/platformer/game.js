@@ -649,6 +649,7 @@ socket.on("platformer-game-started", (room) => {
   lastBulletSpawn = 0;
   if (room.platforms && Array.isArray(room.platforms)) {
     platforms = room.platforms;
+    powerups = Array.isArray(room.powerups) ? room.powerups : [];
   } else {
     generatePlatforms();
   }
