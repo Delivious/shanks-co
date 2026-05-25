@@ -608,6 +608,8 @@ function drawWorld() {
         ctx.save();
         ctx.translate(gunX, gunY);
         ctx.rotate(angle);
+        // flip horizontally so the muzzle points away from the player
+        ctx.scale(-1, 1);
         ctx.drawImage(gunSprite, -spriteW / 2, -spriteH / 2, spriteW, spriteH);
         ctx.restore();
       } else {
