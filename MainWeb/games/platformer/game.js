@@ -541,15 +541,33 @@ leaveRoomBtn.addEventListener("click", leaveRoom);
 
 window.addEventListener("keydown", (event) => {
   if (event.repeat) return;
-  if (event.key === "a" || event.key === "ArrowLeft") controls.left = true;
-  if (event.key === "d" || event.key === "ArrowRight") controls.right = true;
-  if (event.key === "w" || event.key === "ArrowUp") controls.jump = true;
+  if (["a", "ArrowLeft"].includes(event.key)) {
+    event.preventDefault();
+    controls.left = true;
+  }
+  if (["d", "ArrowRight"].includes(event.key)) {
+    event.preventDefault();
+    controls.right = true;
+  }
+  if (["w", "ArrowUp", " ", "Space"].includes(event.key)) {
+    event.preventDefault();
+    controls.jump = true;
+  }
 });
 
 window.addEventListener("keyup", (event) => {
-  if (event.key === "a" || event.key === "ArrowLeft") controls.left = false;
-  if (event.key === "d" || event.key === "ArrowRight") controls.right = false;
-  if (event.key === "w" || event.key === "ArrowUp") controls.jump = false;
+  if (["a", "ArrowLeft"].includes(event.key)) {
+    event.preventDefault();
+    controls.left = false;
+  }
+  if (["d", "ArrowRight"].includes(event.key)) {
+    event.preventDefault();
+    controls.right = false;
+  }
+  if (["w", "ArrowUp", " ", "Space"].includes(event.key)) {
+    event.preventDefault();
+    controls.jump = false;
+  }
 });
 
 window.addEventListener('resize', scheduleResize);
