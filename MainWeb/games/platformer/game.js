@@ -33,6 +33,9 @@ let bullets = [];
 let lastBulletSpawn = 0;
 const bulletSpawnInterval = 1.6;
 let powerups = [];
+let gunShots = [];
+const gunShotSpeed = 720;
+const gunRotationRadius = 32;
 const powerupTypes = {
   bomb: { name: 'bomb', label: '💣 Bomb', color: '#ef4444', duration: 0, icon: '💣', effect: 'clearBullets' },
   doubleFire: { name: 'doubleFire', label: '🔥 Double Fire', color: '#f59e0b', duration: 8, icon: '🔥', effect: 'doubleBullets' },
@@ -62,7 +65,8 @@ function createPlayerState() {
     onGround: true,
     color: playerColors[0],
     activePowerups: {},
-    bulletMultiplier: 1
+    bulletMultiplier: 1,
+    activeAbility: null
   };
 }
 
@@ -219,7 +223,8 @@ function ensurePlayerStates() {
         lane: index,
         name: playerName,
         width: 36,
-        height: 46
+        height: 46,
+        activeAbility: null
       };
     }
     players[playerName].lane = index;
@@ -439,6 +444,32 @@ function updateProjectiles(delta) {
   powerups = powerups.filter(p => !p.collected);
 }
 
+function updateGunShots(delta) {
+  gunShots.forEach((shot) => {
+    shot.x += shot.vx * delta;
+    shot.y += shot.vy * delta;
+  });
+
+  gunShots = gunShots.filter((shot) => shot.x >= -50 && shot.x <= worldWidth + 50 && shot.y >= -50 && shot.y <= worldHeight + 50);
+
+  const playerCenter = { x: myState.x + myState.width / 2, y: myState.y - myState.height / 2 };
+  gunShots.forEach((shot) => {
+    if (shot.owner === username) return;
+    const dx = shot.x - playerCenter.x;
+    const dy = shot.y - playerCenter.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance < shot.radius + Math.max(myState.width, myState.height) * 0.45) {
+      myState.x = worldWidth / 2;
+      myState.y = worldHeight - 60;
+      myState.vy = 0;
+      myState.vx = 0;
+      finishedRound = false;
+      showNotification = "Hit by a gun shot! Back to the bottom.";
+      gunShots = gunShots.filter((s) => s !== shot);
+    }
+  });
+}
+
 function checkRectCollision(rect1, rect2) {
   return rect1.x < rect2.x + rect2.width &&
          rect1.x + rect1.width > rect2.x &&
@@ -515,6 +546,19 @@ function drawWorld() {
     ctx.fillRect(sx - 2, sy - 8, 4, 16);
   });
 
+  // draw gun shots
+  gunShots.forEach((shot) => {
+    const sx = shot.x;
+    const sy = shot.y - cameraY;
+    ctx.fillStyle = '#60a5fa';
+    ctx.beginPath();
+    ctx.arc(sx, sy, shot.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
   // Draw finish banner
   const finishScreenY = finishY - cameraY;
   ctx.fillStyle = '#e879f9';
@@ -538,6 +582,25 @@ function drawWorld() {
     // body
     ctx.fillStyle = player.color || '#60a5fa';
     roundRect(ctx, x, y - h, w, h, 6, true, false);
+
+    // gun ability visual
+    if (player.activeAbility?.type === 'gun') {
+      const centerX = x + w / 2;
+      const centerY = y - h / 2;
+      const angle = player.activeAbility.angle || 0;
+      const gunX = centerX + Math.cos(angle) * gunRotationRadius;
+      const gunY = centerY + Math.sin(angle) * gunRotationRadius;
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.arc(gunX, gunY, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(gunX, gunY);
+      ctx.stroke();
+    }
 
     // invincibility shield
     if (player.name === username && myState.activePowerups.invincibility) {
@@ -578,6 +641,7 @@ function render() {
   if (currentRoom?.status === "playing") {
     updateLocalControls(delta);
     updateProjectiles(delta);
+    updateGunShots(delta);
     sendPositionUpdate(now);
     players[username] = {
       ...players[username],
@@ -589,9 +653,20 @@ function render() {
       height: 46,
       color: players[username]?.color || playerColors[0],
       lane: players[username]?.lane ?? 0,
-      name: username
+      name: username,
+      activeAbility: myState.activeAbility
     };
   }
+
+  // rotate gun ability icons
+  Object.values(players).forEach((player) => {
+    if (player.activeAbility?.type === 'gun') {
+      player.activeAbility.angle = ((player.activeAbility.angle || 0) + delta * 2.4) % (Math.PI * 2);
+      if (player.name === username) {
+        myState.activeAbility = player.activeAbility;
+      }
+    }
+  });
 
   // interpolate remote players toward their target positions
   const interpSpeed = 8; // higher = snappier
@@ -646,6 +721,7 @@ socket.on("platformer-game-started", (room) => {
   resetLocalState();
   ensurePlayerStates();
   bullets = [];
+  gunShots = [];
   lastBulletSpawn = 0;
   if (room.platforms && Array.isArray(room.platforms)) {
     platforms = room.platforms;
@@ -653,9 +729,42 @@ socket.on("platformer-game-started", (room) => {
   } else {
     generatePlatforms();
   }
+  if (room.abilityOwner) {
+    const abilityType = room.abilityType || 'gun';
+    Object.values(players).forEach((player) => {
+      player.activeAbility = null;
+    });
+    if (room.abilityOwner === username) {
+      myState.activeAbility = { type: abilityType, angle: 0 };
+    }
+    if (players[room.abilityOwner]) {
+      players[room.abilityOwner].activeAbility = { type: abilityType, angle: 0 };
+    }
+  } else {
+    myState.activeAbility = null;
+    Object.values(players).forEach((player) => {
+      player.activeAbility = null;
+    });
+  }
   updateRoomSummary();
   updateActionButtons();
   showNotification = "Go!";
+});
+
+socket.on("platformer-gun-fired", ({ roomId, owner, x, y, angle }) => {
+  if (!currentRoom || currentRoom.roomId !== roomId) return;
+  if (players[owner]) {
+    players[owner].activeAbility = null;
+  }
+  const rad = angle || 0;
+  gunShots.push({
+    x,
+    y,
+    vx: Math.cos(rad) * gunShotSpeed,
+    vy: Math.sin(rad) * gunShotSpeed,
+    radius: 8,
+    owner
+  });
 });
 
 socket.on("platformer-position-update", ({ roomId, positions }) => {
@@ -741,6 +850,20 @@ window.addEventListener("keydown", (event) => {
   if (["w", "ArrowUp", " ", "Space", "Spacebar"].includes(key)) {
     event.preventDefault();
     controls.jump = true;
+  }
+  if (key.toLowerCase() === 'f' && currentRoom?.status === 'playing') {
+    event.preventDefault();
+    if (myState.activeAbility?.type === 'gun') {
+      const angle = myState.activeAbility.angle || 0;
+      socket.emit('platformer:fire-gun', {
+        roomId: currentRoom.roomId,
+        username,
+        position: { x: myState.x + myState.width / 2, y: myState.y - myState.height / 2 },
+        angle
+      });
+      myState.activeAbility = null;
+      showNotification = 'Gun fired!';
+    }
   }
 });
 

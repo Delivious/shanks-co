@@ -369,11 +369,25 @@ io.on("connection", (socket) => {
     room.platforms = level.platforms;
     room.powerups = level.powerups;
 
+    const playerNames = [room.host, ...room.guests];
+    const scores = playerNames.map((name) => ({ name, score: room.scores?.[name] || 0 }));
+    const minScore = Math.min(...scores.map((entry) => entry.score));
+    const maxScore = Math.max(...scores.map((entry) => entry.score));
+    if (minScore !== maxScore) {
+      const losers = scores.filter((entry) => entry.score === minScore).map((entry) => entry.name);
+      room.abilityOwner = losers.length === 1 ? losers[0] : null;
+    } else {
+      room.abilityOwner = null;
+    }
+    room.abilityType = room.abilityOwner ? 'gun' : null;
+
     Object.values(room.playerIds).forEach((id) => {
       io.to(id).emit("platformer-game-started", {
         ...sanitizePlatformerRoom(room),
         platforms: room.platforms,
         powerups: room.powerups,
+        abilityOwner: room.abilityOwner,
+        abilityType: room.abilityType,
         platformSeed: room.platformSeed
       });
     });
@@ -440,6 +454,26 @@ io.on("connection", (socket) => {
       io.to(id).emit("platformer-room-updated", sanitizePlatformerRoom(room));
     });
     broadcastPlatformerRoomList();
+  });
+
+  socket.on("platformer:fire-gun", ({ roomId, username, position, angle }) => {
+    const room = platformerRooms[roomId];
+    if (!room || room.status !== "playing") return;
+    if (!room.playerIds[username]) return;
+    if (room.abilityOwner !== username) return;
+
+    room.abilityOwner = null;
+    room.abilityType = null;
+
+    Object.values(room.playerIds).forEach((id) => {
+      io.to(id).emit("platformer-gun-fired", {
+        roomId: room.roomId,
+        owner: username,
+        x: position.x,
+        y: position.y,
+        angle: typeof angle === 'number' ? angle : 0
+      });
+    });
   });
 
   socket.on("platformer:leave-room", ({ roomId, username }) => {
