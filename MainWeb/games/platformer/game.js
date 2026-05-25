@@ -539,32 +539,44 @@ createRoomBtn.addEventListener("click", createRoom);
 startGameBtn.addEventListener("click", startGame);
 leaveRoomBtn.addEventListener("click", leaveRoom);
 
+function isTypingTarget(e) {
+  const t = e.target;
+  if (!t) return false;
+  if (t.isContentEditable) return true;
+  const tag = (t.tagName || "").toUpperCase();
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+}
+
 window.addEventListener("keydown", (event) => {
+  if (isTypingTarget(event)) return; // allow typing in form fields
   if (event.repeat) return;
-  if (["a", "ArrowLeft"].includes(event.key)) {
+  const key = event.key;
+  if (["a", "ArrowLeft"].includes(key)) {
     event.preventDefault();
     controls.left = true;
   }
-  if (["d", "ArrowRight"].includes(event.key)) {
+  if (["d", "ArrowRight"].includes(key)) {
     event.preventDefault();
     controls.right = true;
   }
-  if (["w", "ArrowUp", " ", "Space"].includes(event.key)) {
+  if (["w", "ArrowUp", " ", "Space", "Spacebar"].includes(key)) {
     event.preventDefault();
     controls.jump = true;
   }
 });
 
 window.addEventListener("keyup", (event) => {
-  if (["a", "ArrowLeft"].includes(event.key)) {
+  if (isTypingTarget(event)) return;
+  const key = event.key;
+  if (["a", "ArrowLeft"].includes(key)) {
     event.preventDefault();
     controls.left = false;
   }
-  if (["d", "ArrowRight"].includes(event.key)) {
+  if (["d", "ArrowRight"].includes(key)) {
     event.preventDefault();
     controls.right = false;
   }
-  if (["w", "ArrowUp", " ", "Space"].includes(event.key)) {
+  if (["w", "ArrowUp", " ", "Space", "Spacebar"].includes(key)) {
     event.preventDefault();
     controls.jump = false;
   }
