@@ -25,6 +25,9 @@ const server = http.createServer(app);
 const io = new Server(server);
 const rooms = {};
 const platformerRooms = {};
+const PLATFORMER_WORLD_WIDTH = 800;
+const PLATFORMER_WORLD_HEIGHT = 3000;
+const PLATFORMER_FINISH_Y = 80;
 
 function sanitizeRoom(room) {
   return {
@@ -63,6 +66,36 @@ function broadcastRoomList() {
 
 function broadcastPlatformerRoomList() {
   io.emit("platformer-room-list", getPlatformerRoomList());
+}
+
+function createSeededRandom(seed) {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  return function () {
+    hash = (hash * 1664525 + 1013904223) >>> 0;
+    return hash / 0x100000000;
+  };
+}
+
+function generatePlatformerLayout(seed) {
+  const random = createSeededRandom(seed);
+  const platforms = [];
+  platforms.push({ x: 0, y: PLATFORMER_WORLD_HEIGHT - 20, width: PLATFORMER_WORLD_WIDTH, height: 20 });
+
+  let y = PLATFORMER_WORLD_HEIGHT - 140;
+  const gapMin = 70;
+  const gapMax = 110;
+  while (y > PLATFORMER_FINISH_Y + 60) {
+    const pw = 180 + Math.floor(random() * 100);
+    const px = 20 + Math.floor(random() * Math.max(1, PLATFORMER_WORLD_WIDTH - pw - 40));
+    platforms.push({ x: px, y, width: pw, height: 14 });
+    y -= gapMin + Math.floor(random() * (gapMax - gapMin));
+  }
+
+  platforms.push({ x: PLATFORMER_WORLD_WIDTH / 2 - 140, y: PLATFORMER_FINISH_Y, width: 280, height: 16 });
+  return platforms;
 }
 
 function computeResult(hostMove, guestMove) {
@@ -288,9 +321,15 @@ io.on("connection", (socket) => {
 
     room.status = "playing";
     resetPlatformerRound(room);
+    room.platformSeed = crypto.randomBytes(4).toString("hex");
+    room.platforms = generatePlatformerLayout(room.platformSeed);
 
     Object.values(room.playerIds).forEach((id) => {
-      io.to(id).emit("platformer-game-started", sanitizePlatformerRoom(room));
+      io.to(id).emit("platformer-game-started", {
+        ...sanitizePlatformerRoom(room),
+        platforms: room.platforms,
+        platformSeed: room.platformSeed
+      });
     });
     broadcastPlatformerRoomList();
   });

@@ -469,7 +469,11 @@ socket.on("platformer-game-started", (room) => {
   isHost = currentRoom.host === username;
   resetLocalState();
   ensurePlayerStates();
-  generatePlatforms();
+  if (room.platforms && Array.isArray(room.platforms)) {
+    platforms = room.platforms;
+  } else {
+    generatePlatforms();
+  }
   updateRoomSummary();
   updateActionButtons();
   showNotification = "Go!";
