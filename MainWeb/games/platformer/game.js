@@ -256,7 +256,7 @@ function setGameStatus(message) {
 
 function updateLocalControls(delta) {
   const speed = 240;
-  const jumpSpeed = -480;
+  const jumpSpeed = -960;
   const gravity = 1400;
 
   if (controls.left) {
@@ -406,6 +406,8 @@ function render() {
       ...players[username],
       x: myState.x,
       y: myState.y,
+      width: 36,
+      height: 46,
       color: players[username]?.color || playerColors[0],
       lane: players[username]?.lane ?? 0,
       name: username
