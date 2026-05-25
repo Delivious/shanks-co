@@ -281,18 +281,17 @@ function updateLocalControls(delta) {
   myState.x = Math.max(0, Math.min(worldWidth - myState.width, myState.x));
 
   // collision with platforms (only when falling)
+  let landedOnPlatform = false;
   if (myState.vy > 0) {
     for (let i = 0; i < platforms.length; i++) {
       const p = platforms[i];
-      // player bottom crosses platform top?
-      if (prevY < p.y && myState.y >= p.y) {
-        // check horizontal overlap
-        if ((myState.x + myState.width) > p.x && myState.x < (p.x + p.width)) {
-          myState.y = p.y;
-          myState.vy = 0;
-          myState.onGround = true;
-          break;
-        }
+      const didCrossTop = prevY <= p.y && myState.y >= p.y;
+      const hasHorizontalOverlap = (myState.x + myState.width) > p.x && myState.x < (p.x + p.width);
+      if (didCrossTop && hasHorizontalOverlap) {
+        myState.y = p.y;
+        myState.vy = 0;
+        landedOnPlatform = true;
+        break;
       }
     }
   }
@@ -301,8 +300,10 @@ function updateLocalControls(delta) {
   if (myState.y > worldHeight - 20) {
     myState.y = worldHeight - 20;
     myState.vy = 0;
-    myState.onGround = true;
+    landedOnPlatform = true;
   }
+
+  myState.onGround = landedOnPlatform;
 
   // finish detection: reaching or passing the finishY (top)
   if (myState.y <= finishY && !finishedRound && currentRoom?.status === "playing") {
@@ -406,8 +407,8 @@ function render() {
       ...players[username],
       x: myState.x,
       y: myState.y,
-      interpX: players[username]?.interpX ?? myState.x,
-      interpY: players[username]?.interpY ?? myState.y,
+      interpX: myState.x,
+      interpY: myState.y,
       width: 36,
       height: 46,
       color: players[username]?.color || playerColors[0],
