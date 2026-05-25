@@ -32,6 +32,13 @@ let platforms = [];
 let bullets = [];
 let lastBulletSpawn = 0;
 const bulletSpawnInterval = 1.6;
+let powerups = [];
+const powerupTypes = {
+  bomb: { name: 'bomb', label: '💣 Bomb', color: '#ef4444', duration: 0, icon: '💣', effect: 'clearBullets' },
+  doubleFire: { name: 'doubleFire', label: '🔥 Double Fire', color: '#f59e0b', duration: 8, icon: '🔥', effect: 'doubleBullets' },
+  invincibility: { name: 'invincibility', label: '🛡️ Invincibility', color: '#8b5cf6', duration: 6, icon: '🛡️', effect: 'invincible' },
+  jumpBoost: { name: 'jumpBoost', label: '⬆️ Jump Boost', color: '#06b6d4', duration: 5, icon: '⬆️', effect: 'higherJump' }
+};
 
 let currentRoom = null;
 let players = {};
@@ -53,7 +60,9 @@ function createPlayerState() {
     width: 36,
     height: 46,
     onGround: true,
-    color: playerColors[0]
+    color: playerColors[0],
+    activePowerups: {},
+    bulletMultiplier: 1
   };
 }
 
@@ -123,6 +132,7 @@ function resetLocalState() {
 
 function generatePlatforms() {
   platforms = [];
+  powerups = [];
   // ground platform at bottom
   platforms.push({ x: 0, y: worldHeight - 20, width: worldWidth, height: 20 });
 
@@ -149,9 +159,25 @@ function generatePlatforms() {
     }
 
     platforms.push({ x: px, y: y, width: pw, height: 12 });
+
+    // randomly spawn powerups on platforms (30% chance)
+    if (Math.random() < 0.3) {
+      const powerupTypes_array = Object.values(powerupTypes);
+      const chosen = powerupTypes_array[Math.floor(Math.random() * powerupTypes_array.length)];
+      const powerupX = px + Math.random() * (pw - 16);
+      powerups.push({
+        x: powerupX,
+        y: y - 20,
+        width: 16,
+        height: 16,
+        type: chosen.name,
+        collected: false
+      });
+    }
+
     prevX = px;
     prevWidth = pw;
-    y -= gapMin + Math.floor(Math.random() * (Math.max(0, gapMax - gapMin) - 50));
+    y -= gapMin + Math.floor(Math.random() * (Math.max(0, gapMax - gapMin) - 70));
   }
 
   // top finishing platform
@@ -276,7 +302,8 @@ function setGameStatus(message) {
 
 function updateLocalControls(delta) {
   const speed = 230;
-  const jumpSpeed = -640;
+  const jumpBoostMultiplier = myState.activePowerups.jumpBoost ? 1.35 : 1;
+  const jumpSpeed = -640 * jumpBoostMultiplier;
   const gravity = 1500;
 
   if (controls.left) {
@@ -342,14 +369,20 @@ function updateProjectiles(delta) {
     const fromLeft = Math.random() < 0.5;
     const speed = 260 + Math.random() * 80;
     const gunX = fromLeft ? -24 : worldWidth + 22;
-    bullets.push({
-      x: fromLeft ? -20 : worldWidth + 20,
-      y: spawnY,
-      vx: fromLeft ? speed : -speed,
-      radius: 10,
-      gunX,
-      side: fromLeft ? 'left' : 'right'
-    });
+    
+    // double fire if doubleFire powerup is active
+    const bulletCount = myState.activePowerups.doubleFire ? 2 : 1;
+    for (let i = 0; i < bulletCount; i++) {
+      const offset = bulletCount === 2 ? (i === 0 ? -20 : 20) : 0;
+      bullets.push({
+        x: fromLeft ? -20 : worldWidth + 20,
+        y: spawnY + offset,
+        vx: fromLeft ? speed : -speed,
+        radius: 10,
+        gunX,
+        side: fromLeft ? 'left' : 'right'
+      });
+    }
   }
 
   bullets.forEach((bullet) => {
@@ -364,14 +397,53 @@ function updateProjectiles(delta) {
     const dx = bullet.x - playerCenterX;
     const dy = bullet.y - playerCenterY;
     if (Math.hypot(dx, dy) < bullet.radius + Math.max(myState.width, myState.height) * 0.45) {
-      myState.x = worldWidth / 2;
-      myState.y = worldHeight - 60;
-      myState.vy = 0;
-      myState.vx = 0;
-      finishedRound = false;
-      showNotification = "A projectile hit you! Back to the bottom.";
+      // if invincible, don't reset
+      if (!myState.activePowerups.invincibility) {
+        myState.x = worldWidth / 2;
+        myState.y = worldHeight - 60;
+        myState.vy = 0;
+        myState.vx = 0;
+        finishedRound = false;
+        showNotification = "A projectile hit you! Back to the bottom.";
+      }
     }
   });
+
+  // powerup collision detection
+  const playerRect = { x: myState.x, y: myState.y, width: myState.width, height: myState.height };
+  powerups.forEach((powerup) => {
+    if (powerup.collected) return;
+    if (checkRectCollision(playerRect, { x: powerup.x, y: powerup.y, width: powerup.width, height: powerup.height })) {
+      powerup.collected = true;
+      const type = powerupTypes[powerup.type];
+      if (type.effect === 'clearBullets') {
+        bullets = [];
+        showNotification = "💣 Bomb! Cleared all bullets!";
+      } else if (type.effect === 'doubleFire') {
+        myState.activePowerups.doubleFire = true;
+        setTimeout(() => { delete myState.activePowerups.doubleFire; }, type.duration * 1000);
+        showNotification = "🔥 Double Fire active!";
+      } else if (type.effect === 'invincible') {
+        myState.activePowerups.invincibility = true;
+        setTimeout(() => { delete myState.activePowerups.invincibility; }, type.duration * 1000);
+        showNotification = "🛡️ Invincible shield up!";
+      } else if (type.effect === 'higherJump') {
+        myState.activePowerups.jumpBoost = true;
+        setTimeout(() => { delete myState.activePowerups.jumpBoost; }, type.duration * 1000);
+        showNotification = "⬆️ Jump boost active!";
+      }
+    }
+  });
+  
+  // remove collected powerups
+  powerups = powerups.filter(p => !p.collected);
+}
+
+function checkRectCollision(rect1, rect2) {
+  return rect1.x < rect2.x + rect2.width &&
+         rect1.x + rect1.width > rect2.x &&
+         rect1.y < rect2.y + rect2.height &&
+         rect1.y + rect1.height > rect2.y;
 }
 
 function sendPositionUpdate(now) {
@@ -403,12 +475,32 @@ function drawWorld() {
   // Camera follows local player vertically
   const cameraY = Math.min(Math.max(myState.y - cssH * 0.45, finishY), worldHeight - cssH);
 
-  // Draw platforms
+  // Draw platforms in green
   platforms.forEach((p) => {
     const sx = p.x;
     const sy = p.y - cameraY;
-    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.fillStyle = '#22c55e';
     ctx.fillRect(sx, sy, p.width, p.height);
+    ctx.strokeStyle = '#16a34a';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(sx, sy, p.width, p.height);
+  });
+
+  // draw powerups
+  powerups.forEach((powerup) => {
+    if (powerup.collected) return;
+    const sx = powerup.x;
+    const sy = powerup.y - cameraY;
+    const type = powerupTypes[powerup.type];
+    ctx.fillStyle = type.color;
+    ctx.beginPath();
+    ctx.arc(sx + powerup.width / 2, sy + powerup.height / 2, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(type.icon, sx + powerup.width / 2, sy + powerup.height / 2);
   });
 
   // draw projectile hazards
@@ -446,6 +538,15 @@ function drawWorld() {
     // body
     ctx.fillStyle = player.color || '#60a5fa';
     roundRect(ctx, x, y - h, w, h, 6, true, false);
+
+    // invincibility shield
+    if (player.name === username && myState.activePowerups.invincibility) {
+      ctx.strokeStyle = 'rgba(139, 92, 246, 0.6)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x + w / 2, y - h / 2, w / 2 + 12, 0, Math.PI * 2);
+      ctx.stroke();
+    }
 
     // name
     ctx.fillStyle = '#ffffff';
@@ -544,6 +645,8 @@ socket.on("platformer-game-started", (room) => {
   isHost = currentRoom.host === username;
   resetLocalState();
   ensurePlayerStates();
+  bullets = [];
+  lastBulletSpawn = 0;
   if (room.platforms && Array.isArray(room.platforms)) {
     platforms = room.platforms;
   } else {
