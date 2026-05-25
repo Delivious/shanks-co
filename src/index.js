@@ -630,6 +630,56 @@ app.post("/login", async (req, res) => {
 
 });
 
+app.post("/resend-verification", async (req, res) => {
+  try {
+    const { username, email } = req.body;
+    if (!username || !email) {
+      return res.status(400).json({ success: false, message: "Username and email are required." });
+    }
+
+    const user = await collection.findOne({ name: username });
+    if (!user) {
+      return res.json({ success: false, message: "User not found." });
+    }
+
+    if (user.email !== email) {
+      return res.json({ success: false, message: "Email does not match our records." });
+    }
+
+    if (user.verified) {
+      return res.json({ success: false, message: "Your email is already verified." });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    await collection.updateOne(
+      { _id: user._id },
+      {
+        $set: { verificationToken: token, tokenExpiresAt, verified: false }
+      }
+    );
+
+    const link = `https://shanksco.org/verify?token=${token}`;
+    await resend.emails.send({
+      from: "Shank's Co <noreply@shanksco.org>",
+      to: email,
+      subject: "Verify your email",
+      html: `
+        <h2>Verify Your Account</h2>
+        <p>Click below to verify:</p>
+        <a href="${link}">${link}</a>
+        <p>This link expires in 15 minutes.</p>
+      `
+    });
+
+    return res.json({ success: true, message: "Verification email resent." });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Unable to resend verification email." });
+  }
+});
+
 // ================= VERIFY LINK =================
 app.get("/verify", async (req, res) => {
   const { token } = req.query;

@@ -40,6 +40,7 @@
         <input type="password" id="password" name="password" required>
         
         <button id="submit" type="submit">Log In</button>
+        <button id="resendVerificationBtn" type="button" class="secondary">Resend verification email</button>
       </form>
       <div id="error"></div>
     </section>
@@ -80,7 +81,14 @@
           const data = await response.json();
 
           if (!data.success) {
-            alert(data.message);
+            if (data.message === "Verify your email first") {
+              const resend = confirm("Your email is not verified. Resend verification email?");
+              if (resend) {
+                document.getElementById("resendVerificationBtn").click();
+              }
+            } else {
+              alert(data.message);
+            }
             return;
           }
 
@@ -95,9 +103,34 @@
           console.error(err);
           alert("Login failed");
         }
-
       });
 
+      const resendBtn = document.getElementById("resendVerificationBtn");
+      resendBtn.addEventListener("click", async () => {
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        if (!username || !email) {
+          alert("Enter username and email to resend the verification link.");
+          return;
+        }
+
+        try {
+          const response = await fetch("https://shanksco.org/resend-verification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, email })
+          });
+          const data = await response.json();
+          if (!data.success) {
+            alert(data.message || "Unable to resend verification email.");
+            return;
+          }
+          alert("Verification email resent. Check your inbox.");
+        } catch (err) {
+          console.error(err);
+          alert("Failed to resend verification email.");
+        }
+      });
     });
   </script>
 </body>
