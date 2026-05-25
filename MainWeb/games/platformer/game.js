@@ -29,6 +29,9 @@ const finishY = 80; // y coordinate near the top that ends the round
 const laneColors = ["#4f46e5", "#10b981", "#f97316", "#ec4899"];
 const playerColors = ["#60a5fa", "#34d399", "#fb7185", "#facc15"];
 let platforms = [];
+let bullets = [];
+let lastBulletSpawn = 0;
+const bulletSpawnInterval = 1.6;
 
 let currentRoom = null;
 let players = {};
@@ -125,17 +128,34 @@ function generatePlatforms() {
 
   // generate ascending platforms up to finishY
   let y = worldHeight - 140;
-  const gapMin = 80;
-  const gapMax = 140;
+  const gapMin = 100;
+  const gapMax = 170;
+  let prevX = worldWidth / 2 - 90;
+  let prevWidth = 180;
   while (y > finishY + 40) {
-    const pw = 160 + Math.floor(Math.random() * 120);
-    const px = 20 + Math.floor(Math.random() * Math.max(1, worldWidth - pw - 40));
+    const pw = 140 + Math.floor(Math.random() * 110);
+    const maxShift = 180;
+    let px = prevX + Math.floor((Math.random() * 2 - 1) * maxShift);
+    px = Math.max(20, Math.min(worldWidth - pw - 20, px));
+
+    // keep jump distances fair by limiting horizontal separation
+    const prevCenter = prevX + prevWidth / 2;
+    const center = px + pw / 2;
+    const maxCenterDelta = Math.max((prevWidth + pw) / 2 - 30, 0);
+    if (Math.abs(center - prevCenter) > maxCenterDelta) {
+      const direction = center > prevCenter ? 1 : -1;
+      px = Math.round(prevCenter + direction * maxCenterDelta - pw / 2);
+      px = Math.max(20, Math.min(worldWidth - pw - 20, px));
+    }
+
     platforms.push({ x: px, y: y, width: pw, height: 12 });
+    prevX = px;
+    prevWidth = pw;
     y -= gapMin + Math.floor(Math.random() * (gapMax - gapMin));
   }
 
   // top finishing platform
-  platforms.push({ x: worldWidth/2 - 120, y: finishY, width: 240, height: 14 });
+  platforms.push({ x: worldWidth / 2 - 120, y: finishY, width: 240, height: 14 });
 }
 
 function resizeCanvas() {
@@ -255,9 +275,9 @@ function setGameStatus(message) {
 }
 
 function updateLocalControls(delta) {
-  const speed = 240;
-  const jumpSpeed = -680;
-  const gravity = 1400;
+  const speed = 230;
+  const jumpSpeed = -640;
+  const gravity = 1500;
 
   if (controls.left) {
     myState.vx = -speed;
@@ -312,6 +332,45 @@ function updateLocalControls(delta) {
   }
 }
 
+function updateProjectiles(delta) {
+  lastBulletSpawn += delta;
+  if (lastBulletSpawn >= bulletSpawnInterval) {
+    lastBulletSpawn = 0;
+    const cssH = canvas.clientHeight;
+    const cameraY = Math.min(Math.max(myState.y - cssH * 0.45, finishY), worldHeight - cssH);
+    const spawnY = Math.min(Math.max(cameraY + 80 + Math.random() * (cssH - 160), finishY + 20), worldHeight - 60);
+    const fromLeft = Math.random() < 0.5;
+    const speed = 260 + Math.random() * 80;
+    bullets.push({
+      x: fromLeft ? -20 : worldWidth + 20,
+      y: spawnY,
+      vx: fromLeft ? speed : -speed,
+      radius: 10
+    });
+  }
+
+  bullets.forEach((bullet) => {
+    bullet.x += bullet.vx * delta;
+  });
+
+  bullets = bullets.filter((bullet) => bullet.x >= -60 && bullet.x <= worldWidth + 60);
+
+  const playerCenterX = myState.x + myState.width / 2;
+  const playerCenterY = myState.y - myState.height / 2;
+  bullets.forEach((bullet) => {
+    const dx = bullet.x - playerCenterX;
+    const dy = bullet.y - playerCenterY;
+    if (Math.hypot(dx, dy) < bullet.radius + Math.max(myState.width, myState.height) * 0.45) {
+      myState.x = worldWidth / 2;
+      myState.y = worldHeight - 60;
+      myState.vy = 0;
+      myState.vx = 0;
+      finishedRound = false;
+      showNotification = "A projectile hit you! Back to the bottom.";
+    }
+  });
+}
+
 function sendPositionUpdate(now) {
   if (!currentRoom || currentRoom.status !== "playing") return;
   if (now - lastPositionSend < 80) return;
@@ -347,6 +406,18 @@ function drawWorld() {
     const sy = p.y - cameraY;
     ctx.fillStyle = 'rgba(255,255,255,0.03)';
     ctx.fillRect(sx, sy, p.width, p.height);
+  });
+
+  // draw projectile hazards
+  bullets.forEach((bullet) => {
+    const sx = bullet.x;
+    const sy = bullet.y - cameraY;
+    ctx.fillStyle = bullet.vx > 0 ? '#facc15' : '#f97316';
+    ctx.beginPath();
+    ctx.arc(sx, sy, bullet.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.fillRect(sx - 2, sy - 8, 4, 16);
   });
 
   // Draw finish banner
@@ -402,6 +473,7 @@ function render() {
 
   if (currentRoom?.status === "playing") {
     updateLocalControls(delta);
+    updateProjectiles(delta);
     sendPositionUpdate(now);
     players[username] = {
       ...players[username],
