@@ -836,6 +836,11 @@ app.post("/check-verified", async (req, res) => {
   
   }
 });
+
+// Simple health endpoint for uptime and basic service check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime() });
+});
 const port = process.env.PORT || 5000;
 
 server.listen(port, "0.0.0.0", () => {
