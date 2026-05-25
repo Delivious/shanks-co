@@ -22,11 +22,13 @@ const roomNameInput = document.getElementById("roomNameInput");
 const targetScoreInput = document.getElementById("targetScoreInput");
 const gamePanel = document.getElementById("gamePanel");
 
-const finishX = 2200;
-const worldWidth = 2400;
-const laneY = [320, 240, 160, 80];
+// vertical world: climb up toward `finishY` (smaller y values)
+const worldWidth = 800;
+const worldHeight = 3000;
+const finishY = 80; // y coordinate near the top that ends the round
 const laneColors = ["#4f46e5", "#10b981", "#f97316", "#ec4899"];
 const playerColors = ["#60a5fa", "#34d399", "#fb7185", "#facc15"];
+let platforms = [];
 
 let currentRoom = null;
 let players = {};
@@ -41,8 +43,8 @@ let resizePending = false;
 
 function createPlayerState() {
   return {
-    x: 0,
-    y: laneY[0],
+    x: worldWidth / 2,
+    y: worldHeight - 60,
     vx: 0,
     vy: 0,
     width: 36,
@@ -116,6 +118,26 @@ function resetLocalState() {
   ensurePlayerStates();
 }
 
+function generatePlatforms() {
+  platforms = [];
+  // ground platform at bottom
+  platforms.push({ x: 0, y: worldHeight - 20, width: worldWidth, height: 20 });
+
+  // generate ascending platforms up to finishY
+  let y = worldHeight - 140;
+  const gapMin = 80;
+  const gapMax = 140;
+  while (y > finishY + 40) {
+    const pw = 160 + Math.floor(Math.random() * 120);
+    const px = 20 + Math.floor(Math.random() * Math.max(1, worldWidth - pw - 40));
+    platforms.push({ x: px, y: y, width: pw, height: 12 });
+    y -= gapMin + Math.floor(Math.random() * (gapMax - gapMin));
+  }
+
+  // top finishing platform
+  platforms.push({ x: worldWidth/2 - 120, y: finishY, width: 240, height: 14 });
+}
+
 function resizeCanvas() {
   // Set canvas size to match CSS size, but use devicePixelRatio for crispness
   const cssW = canvas.clientWidth || 1200;
@@ -143,18 +165,23 @@ function ensurePlayerStates() {
   orderedPlayers.forEach((playerName, index) => {
     if (!players[playerName]) {
       players[playerName] = {
-        x: 0,
-        y: laneY[index],
+        x: worldWidth / 2 + (index - 1) * 80,
+        interpX: worldWidth / 2 + (index - 1) * 80,
+        y: worldHeight - 60,
+        interpY: worldHeight - 60,
         color: playerColors[index] || playerColors[0],
         lane: index,
-        name: playerName
+        name: playerName,
+        width: 36,
+        height: 46
       };
     }
     players[playerName].lane = index;
-    players[playerName].y = laneY[index];
     players[playerName].color = playerColors[index] || playerColors[0];
+    // ensure local baseline for host
     if (playerName === username) {
-      myState.y = laneY[index];
+      myState.y = worldHeight - 60;
+      myState.x = players[playerName].x;
     }
   });
 }
@@ -244,22 +271,41 @@ function updateLocalControls(delta) {
     myState.vy = jumpSpeed;
     myState.onGround = false;
   }
-
-  myState.y += myState.vy * delta;
-  myState.x += myState.vx * delta;
+  // apply physics
   myState.vy += gravity * delta;
+  const prevY = myState.y;
+  myState.x += myState.vx * delta;
+  myState.y += myState.vy * delta;
 
-  const lane = players[username]?.lane ?? 0;
-  const floorY = laneY[lane];
-  if (myState.y >= floorY) {
-    myState.y = floorY;
+  // clamp horizontally
+  myState.x = Math.max(0, Math.min(worldWidth, myState.x));
+
+  // collision with platforms (only when falling)
+  if (myState.vy > 0) {
+    for (let i = 0; i < platforms.length; i++) {
+      const p = platforms[i];
+      // player bottom crosses platform top?
+      if (prevY < p.y && myState.y >= p.y) {
+        // check horizontal overlap
+        if ((myState.x + myState.width) > p.x && myState.x < (p.x + p.width)) {
+          myState.y = p.y;
+          myState.vy = 0;
+          myState.onGround = true;
+          break;
+        }
+      }
+    }
+  }
+
+  // ground floor fallback
+  if (myState.y > worldHeight - 20) {
+    myState.y = worldHeight - 20;
     myState.vy = 0;
     myState.onGround = true;
   }
 
-  myState.x = Math.max(0, Math.min(worldWidth, myState.x));
-
-  if (myState.x >= finishX && !finishedRound && currentRoom?.status === "playing") {
+  // finish detection: reaching or passing the finishY (top)
+  if (myState.y <= finishY && !finishedRound && currentRoom?.status === "playing") {
     finishedRound = true;
     socket.emit("platformer:finish-line", { roomId: currentRoom.roomId, username });
   }
@@ -291,33 +337,30 @@ function drawWorld() {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, cssW, cssH);
 
-  // Camera follows local player
-  const cameraX = Math.min(Math.max(myState.x - cssW * 0.28, 0), worldWidth - cssW);
+  // Camera follows local player vertically
+  const cameraY = Math.min(Math.max(myState.y - cssH * 0.45, finishY), worldHeight - cssH);
 
-  // Draw lanes
-  for (let i = 0; i < laneY.length; i += 1) {
-    const y = laneY[i] + 40 - 20; // adjust for canvas position
-    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(cssW, y);
-    ctx.stroke();
-  }
+  // Draw platforms
+  platforms.forEach((p) => {
+    const sx = p.x;
+    const sy = p.y - cameraY;
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.fillRect(sx, sy, p.width, p.height);
+  });
 
-  // Draw finish line
-  const finishScreenX = finishX - cameraX;
+  // Draw finish banner
+  const finishScreenY = finishY - cameraY;
   ctx.fillStyle = '#e879f9';
-  ctx.fillRect(finishScreenX, 0, 6, cssH);
+  ctx.fillRect(0, finishScreenY - 6, cssW, 6);
   ctx.fillStyle = 'rgba(232,121,249,0.06)';
-  ctx.fillRect(finishScreenX, 0, 60, cssH);
+  ctx.fillRect(0, finishScreenY - 60, cssW, 60);
 
-  // Draw players (with interpolation)
+  // Draw players (with interpolation on X and Y)
   Object.values(players).forEach((player) => {
-    // interpolate if remote
     const displayX = (player.interpX !== undefined) ? player.interpX : player.x;
-    const x = displayX - cameraX + 30;
-    const y = player.y;
+    const displayY = (player.interpY !== undefined) ? player.interpY : player.y;
+    const x = displayX;
+    const y = displayY - cameraY;
     const w = player.width || 36;
     const h = player.height || 46;
 
@@ -374,8 +417,10 @@ function render() {
   Object.values(players).forEach((p) => {
     if (p.name === username) return;
     if (p.interpX === undefined) p.interpX = p.x;
-    // simple lerp
+    // simple lerp for X and Y
     p.interpX += (p.x - p.interpX) * Math.min(1, interpSpeed * delta);
+    if (p.interpY === undefined) p.interpY = p.y;
+    p.interpY += (p.y - p.interpY) * Math.min(1, interpSpeed * delta);
   });
 
   drawWorld();
@@ -418,6 +463,7 @@ socket.on("platformer-game-started", (room) => {
   currentRoom = room;
   isHost = currentRoom.host === username;
   resetLocalState();
+  generatePlatforms();
   updateRoomSummary();
   updateActionButtons();
   showNotification = "Go!";
@@ -433,6 +479,7 @@ socket.on("platformer-position-update", ({ roomId, positions }) => {
         x: position.x,
         interpX: position.x,
         y: position.y,
+        interpY: position.y,
         lane: Object.keys(players).length,
         color: playerColors[Object.keys(players).length % playerColors.length],
         name,
@@ -442,6 +489,7 @@ socket.on("platformer-position-update", ({ roomId, positions }) => {
       // smooth interpolate
       players[name].lastX = players[name].x;
       players[name].x = position.x;
+      players[name].y = position.y;
       players[name].lastUpdate = now;
     }
   });
