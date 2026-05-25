@@ -934,8 +934,34 @@ function applyGameState(state) {
     try { threefoldBtn.textContent = `Get your Threefold Pin and throw pins at the button for 15 Rosaries a second! Cost: ${costs[2]*priceMultiplier} Rosaries` } catch (e) {}
     try { paleOil.textContent = `Get your Pale Oil to *BUFF* every one of your tools by +3 Rosaries! Cost: ${costs[3]*priceMultiplier} Rosaries` } catch (e) {}
     try { rebirthBtnToRebirth.textContent = `Rebirth for ${rebirthCost} Rosaries` } catch (e) {}
+    // restore any active intervals for upgrades the player already has
+    restoreActiveIntervals();
   } catch (err) {
     console.error('Failed to apply game state', err);
+  }
+}
+
+function restoreActiveIntervals(){
+  // start throwy interval (counts[0])
+  if (counts[0] > 0 && !actives[0]){
+    actives[0] = setInterval(() =>{
+      roseValue += (((counts[3]) * 3)+counts[0])*currencyMultiplier;
+      rps += (((counts[3]) * 3)+counts[0])*currencyMultiplier;
+    },1000);
+  }
+  // start sharpened interval (counts[1])
+  if (counts[1] > 0 && !actives[1]){
+    actives[1] = setInterval(() =>{
+      roseValue += (5*counts[1]) * sharpenMultiplier + ((counts[3] * 3)*counts[1])*currencyMultiplier;
+      rps += (5*counts[1])*sharpenMultiplier + ((counts[3] * 3)*counts[1])*currencyMultiplier;
+    },1000);
+  }
+  // start threefold interval (counts[2])
+  if (counts[2] > 0 && !actives[2]){
+    actives[2] = setInterval(() =>{
+      roseValue += 5*counts[2] + (((counts[3] * 1)*counts[2]))*currencyMultiplier;
+      rps += 5*counts[2] + (((counts[3] * 1)*counts[2]))*currencyMultiplier;
+    },333);
   }
 }
 
