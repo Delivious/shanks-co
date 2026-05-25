@@ -101,7 +101,7 @@
 
     function update(dt){
       if (!playing) return;
-      spawnCars(dt);
+      spawnAuditors(dt);
       // move auditors
       cars.forEach(c=>{
         c.x += c.dir * c.speed * (dt/16);
