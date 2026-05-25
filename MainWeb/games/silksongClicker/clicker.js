@@ -875,3 +875,90 @@ function paleOilFunc(){
     paleOil.textContent = `Get your Pale Oil to *BUFF* every one of your tools by +3 Rosaries! Cost: ${costs[3]*priceMultiplier} Rosaries`
   }
 }
+
+// ---------------------------
+// Save / Load to server for logged-in users
+// ---------------------------
+async function saveSilksong() {
+  try {
+    const username = localStorage.getItem('username');
+    if (!username) return;
+    const payload = {
+      costs,
+      counts,
+      actives: [!!actives[0], !!actives[1], !!actives[2], !!actives[3]],
+      roseValue,
+      multiplier,
+      distance,
+      distanceX,
+      spaceCounter,
+      bossHealth,
+      purchase1, purchase2, purchase3, purchase4, purchase5,
+      bought1, bought2, bought3, bought4,
+      rpsCounter, sharpenMultiplier, rps, rpsSubtract,
+      skill1Cost, skill2Cost, skill3Cost, skill4Cost,
+      rebirthMultiplier, rebirthCount, rebirthTokens, rebirthCost,
+      clickcost, priceMultiplier, damageMultiplier, speedMultiplier, currencyMultiplier,
+      x, y, charPos
+    };
+
+    const resp = await fetch(window.location.origin + '/api/silksong/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, data: payload })
+    });
+    const j = await resp.json();
+    if (!j.success) console.warn('Save failed', j.message);
+  } catch (err) {
+    console.error('Failed to save silksong data', err);
+  }
+}
+
+function applyGameState(state) {
+  if (!state) return;
+  try {
+    if (state.costs) costs = state.costs;
+    if (state.counts) counts = state.counts;
+    if (typeof state.roseValue === 'number') roseValue = state.roseValue;
+    if (typeof state.multiplier === 'number') multiplier = state.multiplier;
+    if (typeof state.distance === 'number') distance = state.distance;
+    if (typeof state.rebirthCount === 'number') rebirthCount = state.rebirthCount;
+    if (typeof state.rebirthTokens === 'number') rebirthTokens = state.rebirthTokens;
+    if (typeof state.rebirthCost === 'number') rebirthCost = state.rebirthCost;
+    if (typeof state.clickcost === 'number') clickcost = state.clickcost;
+    if (typeof state.sharpenMultiplier === 'number') sharpenMultiplier = state.sharpenMultiplier;
+    // update UI that depends on these values
+    try { hornetPara.textContent = `Rosaries: ${formatNumber(roseValue)}` } catch (e) {}
+    try { sharpen.textContent = `Get your Nail to slash attack the button for ${5*sharpenMultiplier} Rosaries a second! Cost: ${costs[1]*priceMultiplier} Rosaries` } catch (e) {}
+    try { lighttool.textContent = `Get a Light Throwing Tool that gets you 1 Rosarie per second! Cost: ${costs[0]*priceMultiplier} Rosaries` } catch (e) {}
+    try { threefoldBtn.textContent = `Get your Threefold Pin and throw pins at the button for 15 Rosaries a second! Cost: ${costs[2]*priceMultiplier} Rosaries` } catch (e) {}
+    try { paleOil.textContent = `Get your Pale Oil to *BUFF* every one of your tools by +3 Rosaries! Cost: ${costs[3]*priceMultiplier} Rosaries` } catch (e) {}
+    try { rebirthBtnToRebirth.textContent = `Rebirth for ${rebirthCost} Rosaries` } catch (e) {}
+  } catch (err) {
+    console.error('Failed to apply game state', err);
+  }
+}
+
+async function loadSilksong() {
+  try {
+    const username = localStorage.getItem('username');
+    if (!username) return;
+    const resp = await fetch(window.location.origin + '/api/silksong/load?username=' + encodeURIComponent(username));
+    const j = await resp.json();
+    if (!j.success) return;
+    applyGameState(j.data);
+  } catch (err) {
+    console.error('Failed to load silksong data', err);
+  }
+}
+
+// Autosave every 30s for logged-in users
+setInterval(() => {
+  saveSilksong();
+}, 30000);
+
+// Save on unload
+window.addEventListener('beforeunload', () => { saveSilksong(); });
+
+// Attempt load on start if user is logged in
+try { if (localStorage.getItem('username')) loadSilksong(); } catch (e) {}

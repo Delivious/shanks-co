@@ -640,17 +640,39 @@ app.post("/login", async (req, res) => {
     });
 
   } catch (err) {
-
-    console.error(err);
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
-
+    console.error("LOGIN ERROR:", err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 
 });
+
+// ================= SILK-SONG CLICKER SAVE/LOAD =================
+app.post("/api/silksong/save", async (req, res) => {
+  try {
+    const { username, data } = req.body;
+    if (!username) return res.status(400).json({ success: false, message: "Missing username" });
+    await collection.updateOne({ name: username }, { $set: { silksong: data } });
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("SAVE SILKSONG ERROR:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.get("/api/silksong/load", async (req, res) => {
+  try {
+    const username = req.query.username;
+    if (!username) return res.status(400).json({ success: false, message: "Missing username" });
+    const user = await collection.findOne({ name: username });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    return res.json({ success: true, data: user.silksong || null });
+  } catch (err) {
+    console.error("LOAD SILKSONG ERROR:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+
 
 app.post("/resend-verification", async (req, res) => {
   try {
