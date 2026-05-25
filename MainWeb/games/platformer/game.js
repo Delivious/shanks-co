@@ -175,10 +175,13 @@ function ensurePlayerStates() {
         width: 36,
         height: 46
       };
-    } else {
-      // ensure color and lane are set for this index
-      players[playerName].lane = index;
-      players[playerName].color = playerColors[index] || playerColors[0];
+    }
+    players[playerName].lane = index;
+    players[playerName].color = playerColors[index] || playerColors[0];
+    // ensure local baseline for host
+    if (playerName === username) {
+      myState.y = worldHeight - 60;
+      myState.x = players[playerName].x;
     }
   });
 }
@@ -253,7 +256,7 @@ function setGameStatus(message) {
 
 function updateLocalControls(delta) {
   const speed = 240;
-  const jumpSpeed = -600;
+  const jumpSpeed = -680;
   const gravity = 1400;
 
   if (controls.left) {
@@ -275,13 +278,13 @@ function updateLocalControls(delta) {
   myState.y += myState.vy * delta;
 
   // clamp horizontally
-  myState.x = Math.max(0, Math.min(worldWidth, myState.x));
+  myState.x = Math.max(0, Math.min(worldWidth - myState.width, myState.x));
 
   // collision with platforms (only when falling)
   if (myState.vy > 0) {
     for (let i = 0; i < platforms.length; i++) {
       const p = platforms[i];
-      // player bottom (myState.y) crosses platform top?
+      // player bottom crosses platform top?
       if (prevY < p.y && myState.y >= p.y) {
         // check horizontal overlap
         if ((myState.x + myState.width) > p.x && myState.x < (p.x + p.width)) {
@@ -399,23 +402,18 @@ function render() {
   if (currentRoom?.status === "playing") {
     updateLocalControls(delta);
     sendPositionUpdate(now);
-    // ensure local player is in the players map with all rendering props
-    if (!players[username]) {
-      players[username] = {
-        x: myState.x,
-        y: myState.y,
-        interpX: myState.x,
-        interpY: myState.y,
-        width: 36,
-        height: 46,
-        color: playerColors[0],
-        lane: 0,
-        name: username
-      };
-    }
-    // always update position
-    players[username].x = myState.x;
-    players[username].y = myState.y;
+    players[username] = {
+      ...players[username],
+      x: myState.x,
+      y: myState.y,
+      interpX: players[username]?.interpX ?? myState.x,
+      interpY: players[username]?.interpY ?? myState.y,
+      width: 36,
+      height: 46,
+      color: players[username]?.color || playerColors[0],
+      lane: players[username]?.lane ?? 0,
+      name: username
+    };
   }
 
   // interpolate remote players toward their target positions
@@ -469,6 +467,7 @@ socket.on("platformer-game-started", (room) => {
   currentRoom = room;
   isHost = currentRoom.host === username;
   resetLocalState();
+  ensurePlayerStates();
   generatePlatforms();
   updateRoomSummary();
   updateActionButtons();
