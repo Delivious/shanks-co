@@ -151,7 +151,7 @@ function generatePlatforms() {
     platforms.push({ x: px, y: y, width: pw, height: 12 });
     prevX = px;
     prevWidth = pw;
-    y -= gapMin + Math.floor(Math.random() * (Math.max(0, gapMax - gapMin) - 40));
+    y -= gapMin + Math.floor(Math.random() * (Math.max(0, gapMax - gapMin) - 50));
   }
 
   // top finishing platform
