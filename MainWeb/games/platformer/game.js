@@ -34,13 +34,20 @@ let lastBulletSpawn = 0;
 const bulletSpawnInterval = 1.6;
 let powerups = [];
 let gunShots = [];
+let mouseAngle = 0;
 const gunShotSpeed = 720;
 const gunRotationRadius = 32;
+// gun sprite
+let gunSprite = new Image();
+let gunSpriteLoaded = false;
+gunSprite.onload = () => { gunSpriteLoaded = true; };
+gunSprite.src = '../../../Assets/imgs/gun.png';
 const powerupTypes = {
   bomb: { name: 'bomb', label: '💣 Bomb', color: '#ef4444', duration: 0, icon: '💣', effect: 'clearBullets' },
   doubleFire: { name: 'doubleFire', label: '🔥 Double Fire', color: '#f59e0b', duration: 8, icon: '🔥', effect: 'doubleBullets' },
   invincibility: { name: 'invincibility', label: '🛡️ Invincibility', color: '#8b5cf6', duration: 6, icon: '🛡️', effect: 'invincible' },
-  jumpBoost: { name: 'jumpBoost', label: '⬆️ Jump Boost', color: '#06b6d4', duration: 5, icon: '⬆️', effect: 'higherJump' }
+  jumpBoost: { name: 'jumpBoost', label: '⬆️ Jump Boost', color: '#06b6d4', duration: 5, icon: '⬆️', effect: 'higherJump' },
+  gun: { name: 'gun', label: '🔫 Gun', color: '#f97316', duration: 0, icon: '🔫', effect: 'gun' }
 };
 
 let currentRoom = null;
@@ -436,6 +443,9 @@ function updateProjectiles(delta) {
         myState.activePowerups.jumpBoost = true;
         setTimeout(() => { delete myState.activePowerups.jumpBoost; }, type.duration * 1000);
         showNotification = "⬆️ Jump boost active!";
+      } else if (type.effect === 'gun') {
+        myState.activeAbility = { type: 'gun', angle: mouseAngle };
+        showNotification = "🔫 Gun acquired! Aim with your cursor and press F to fire.";
       }
     }
   });
@@ -487,7 +497,9 @@ function sendPositionUpdate(now) {
     username,
     position: {
       x: myState.x,
-      y: myState.y
+      y: myState.y,
+      hasGun: myState.activeAbility?.type === 'gun',
+      abilityAngle: myState.activeAbility?.type === 'gun' ? myState.activeAbility.angle : null
     }
   });
 }
@@ -583,23 +595,28 @@ function drawWorld() {
     ctx.fillStyle = player.color || '#60a5fa';
     roundRect(ctx, x, y - h, w, h, 6, true, false);
 
-    // gun ability visual
+    // gun ability visual (sprite rotates to aim)
     if (player.activeAbility?.type === 'gun') {
       const centerX = x + w / 2;
       const centerY = y - h / 2;
       const angle = player.activeAbility.angle || 0;
       const gunX = centerX + Math.cos(angle) * gunRotationRadius;
       const gunY = centerY + Math.sin(angle) * gunRotationRadius;
-      ctx.fillStyle = '#facc15';
-      ctx.beginPath();
-      ctx.arc(gunX, gunY, 10, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.lineTo(gunX, gunY);
-      ctx.stroke();
+      const spriteW = 36;
+      const spriteH = 20;
+      if (gunSpriteLoaded) {
+        ctx.save();
+        ctx.translate(gunX, gunY);
+        ctx.rotate(angle);
+        ctx.drawImage(gunSprite, -spriteW / 2, -spriteH / 2, spriteW, spriteH);
+        ctx.restore();
+      } else {
+        // fallback small circle if sprite not loaded yet
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.arc(gunX, gunY, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     // invincibility shield
@@ -658,15 +675,10 @@ function render() {
     };
   }
 
-  // rotate gun ability icons
-  Object.values(players).forEach((player) => {
-    if (player.activeAbility?.type === 'gun') {
-      player.activeAbility.angle = ((player.activeAbility.angle || 0) + delta * 2.4) % (Math.PI * 2);
-      if (player.name === username) {
-        myState.activeAbility = player.activeAbility;
-      }
-    }
-  });
+  // make sure the local gun ability rotates to follow cursor direction
+  if (myState.activeAbility?.type === 'gun') {
+    myState.activeAbility.angle = mouseAngle;
+  }
 
   // interpolate remote players toward their target positions
   const interpSpeed = 8; // higher = snappier
@@ -781,6 +793,7 @@ socket.on("platformer-position-update", ({ roomId, positions }) => {
         lane: Object.keys(players).length,
         color: playerColors[Object.keys(players).length % playerColors.length],
         name,
+        activeAbility: position.hasGun ? { type: 'gun', angle: position.abilityAngle || 0 } : null,
         lastUpdate: now
       };
     } else {
@@ -788,6 +801,7 @@ socket.on("platformer-position-update", ({ roomId, positions }) => {
       players[name].lastX = players[name].x;
       players[name].x = position.x;
       players[name].y = position.y;
+      players[name].activeAbility = position.hasGun ? { type: 'gun', angle: position.abilityAngle || 0 } : null;
       players[name].lastUpdate = now;
     }
   });
@@ -864,6 +878,22 @@ window.addEventListener("keydown", (event) => {
       myState.activeAbility = null;
       showNotification = 'Gun fired!';
     }
+  }
+});
+
+canvas.addEventListener('mousemove', (event) => {
+  if (!currentRoom || currentRoom.status !== 'playing') return;
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const cameraY = Math.min(Math.max(myState.y - canvas.clientHeight * 0.45, finishY), worldHeight - canvas.clientHeight);
+  const worldX = x;
+  const worldY = y + cameraY;
+  const centerX = myState.x + myState.width / 2;
+  const centerY = myState.y - myState.height / 2;
+  mouseAngle = Math.atan2(worldY - centerY, worldX - centerX);
+  if (myState.activeAbility?.type === 'gun') {
+    myState.activeAbility.angle = mouseAngle;
   }
 });
 

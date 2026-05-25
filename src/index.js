@@ -113,8 +113,7 @@ function generatePlatformerLayout(seed) {
     platforms.push({ x: px, y, width: pw, height: 14 });
 
     if (random() < 0.3) {
-      const powerupTypes = ['bomb', 'doubleFire', 'invincibility', 'jumpBoost'];
-      const chosen = powerupTypes[Math.floor(random() * powerupTypes.length)];
+      const powerupTypes = ['bomb', 'doubleFire', 'invincibility', 'jumpBoost', 'gun'];
       const powerupX = px + random() * Math.max(0, pw - 16);
       powerups.push({
         x: Math.max(0, Math.min(powerupX, PLATFORMER_WORLD_WIDTH - 16)),
@@ -460,7 +459,6 @@ io.on("connection", (socket) => {
     const room = platformerRooms[roomId];
     if (!room || room.status !== "playing") return;
     if (!room.playerIds[username]) return;
-    if (room.abilityOwner !== username) return;
 
     room.abilityOwner = null;
     room.abilityType = null;
