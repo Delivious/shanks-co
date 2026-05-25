@@ -114,6 +114,7 @@ function generatePlatformerLayout(seed) {
 
     if (random() < 0.3) {
       const powerupTypes = ['bomb', 'doubleFire', 'invincibility', 'jumpBoost', 'gun'];
+      const chosen = powerupTypes[Math.floor(random() * powerupTypes.length)];
       const powerupX = px + random() * Math.max(0, pw - 16);
       powerups.push({
         x: Math.max(0, Math.min(powerupX, PLATFORMER_WORLD_WIDTH - 16)),
