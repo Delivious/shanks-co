@@ -82,15 +82,37 @@ function createSeededRandom(seed) {
 function generatePlatformerLayout(seed) {
   const random = createSeededRandom(seed);
   const platforms = [];
+  // ground
   platforms.push({ x: 0, y: PLATFORMER_WORLD_HEIGHT - 20, width: PLATFORMER_WORLD_WIDTH, height: 20 });
 
   let y = PLATFORMER_WORLD_HEIGHT - 140;
-  const gapMin = 70;
-  const gapMax = 110;
+  const gapMin = 60;
+  const gapMax = 100;
+  // start roughly centered
+  let prevPw = 220;
+  let prevPx = Math.floor(PLATFORMER_WORLD_WIDTH / 2 - prevPw / 2);
+
   while (y > PLATFORMER_FINISH_Y + 60) {
     const pw = 180 + Math.floor(random() * 100);
-    const px = 20 + Math.floor(random() * Math.max(1, PLATFORMER_WORLD_WIDTH - pw - 40));
+    const maxShift = 160; // limit how far next platform can be horizontally
+    const shift = Math.floor((random() * 2 - 1) * maxShift);
+    let px = prevPx + shift;
+    px = Math.max(20, Math.min(PLATFORMER_WORLD_WIDTH - pw - 20, px));
+
+    // ensure reasonable horizontal overlap so jumps are reachable
+    const prevCenter = prevPx + prevPw / 2;
+    const newCenter = px + pw / 2;
+    const maxCenterDist = Math.max((prevPw + pw) / 2 - 40, 0);
+    if (Math.abs(newCenter - prevCenter) > maxCenterDist) {
+      const dir = newCenter > prevCenter ? 1 : -1;
+      px = Math.round(prevCenter + dir * maxCenterDist - pw / 2);
+      px = Math.max(20, Math.min(PLATFORMER_WORLD_WIDTH - pw - 20, px));
+    }
+
     platforms.push({ x: px, y, width: pw, height: 14 });
+    prevPx = px;
+    prevPw = pw;
+
     y -= gapMin + Math.floor(random() * (gapMax - gapMin));
   }
 
