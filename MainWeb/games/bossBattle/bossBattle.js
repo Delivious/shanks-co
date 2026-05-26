@@ -38,8 +38,8 @@ const boss = {
   y: 140,
   width: 170,
   height: 130,
-  health: 100,
-  maxHealth: 100,
+  health: 500,
+  maxHealth: 500,
   phase: 1,
   patternTimer: 0,
   patternDelay: 1.4,
@@ -49,12 +49,12 @@ const boss = {
 };
 
 const state = {
-  message: 'Use A/D or ←/→ to move. Aim with mouse. Left click to shoot.',
+  message: 'Use A/D or arrow keys to move in any direction. Aim with mouse. Left click to shoot.',
   messageTimer: 0,
   lastPowerup: 0
 };
 
-const keys = { left: false, right: false };
+const keys = { left: false, right: false, up: false, down: false };
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -156,37 +156,37 @@ function bossAttack(delta) {
   boss.patternTimer = boss.patternDelay;
 
   const angleToPlayer = Math.atan2(player.y - boss.y, player.x - boss.x);
-  boss.patternDelay = Math.max(0.75, 1.5 - boss.phase * 0.14) + Math.random() * 0.25;
+  boss.patternDelay = Math.max(0.55, 1.3 - boss.phase * 0.16) + Math.random() * 0.2;
 
   if (boss.attackIndex === 0) {
-    const count = 7 + boss.phase * 2;
-    const spread = 1.5;
+    const count = 9 + boss.phase * 2;
+    const spread = 1.8;
     for (let i = 0; i < count; i += 1) {
       const angle = angleToPlayer - spread / 2 + (spread / (count - 1)) * i + randomRange(-0.08, 0.08);
-      enemyBullets.push({ x: boss.x, y: boss.y + 42, vx: Math.cos(angle) * 360, vy: Math.sin(angle) * 360, radius: 12, color: '#f97316' });
+      enemyBullets.push({ x: boss.x, y: boss.y + 42, vx: Math.cos(angle) * (380 + boss.phase * 20), vy: Math.sin(angle) * (380 + boss.phase * 20), radius: 12, color: '#f97316' });
     }
     setMessage('Boss spray! Dodge the orange fan.', 2000);
   } else if (boss.attackIndex === 1) {
-    const count = 5;
+    const count = 6 + Math.floor(boss.phase / 2);
     for (let i = 0; i < count; i += 1) {
-      const offset = (i - (count - 1) / 2) * 0.18;
+      const offset = (i - (count - 1) / 2) * 0.17;
       const angle = angleToPlayer + offset;
-      enemyBullets.push({ x: boss.x, y: boss.y + 42, vx: Math.cos(angle) * 460, vy: Math.sin(angle) * 460, radius: 10, color: '#facc15' });
+      enemyBullets.push({ x: boss.x, y: boss.y + 42, vx: Math.cos(angle) * (500 + boss.phase * 25), vy: Math.sin(angle) * (500 + boss.phase * 25), radius: 10, color: '#facc15' });
     }
     setMessage('Shotgun volley! Stay sharp.', 2000);
   } else if (boss.attackIndex === 2) {
-    for (let i = 0; i < 18; i += 1) {
-      const angle = ((Math.PI * 2) * i) / 18 + randomRange(-0.05, 0.05);
-      enemyBullets.push({ x: boss.x, y: boss.y + 42, vx: Math.cos(angle) * 280, vy: Math.sin(angle) * 280, radius: 11, color: '#ec4899' });
+    for (let i = 0; i < 20; i += 1) {
+      const angle = ((Math.PI * 2) * i) / 20 + randomRange(-0.05, 0.05);
+      enemyBullets.push({ x: boss.x, y: boss.y + 42, vx: Math.cos(angle) * (300 + boss.phase * 15), vy: Math.sin(angle) * (300 + boss.phase * 15), radius: 11, color: '#ec4899' });
     }
     setMessage('Radial burst! Find the gaps.', 2000);
   } else {
-    const count = 3 + boss.phase;
+    const count = 4 + boss.phase;
     for (let i = 0; i < count; i += 1) {
-      const targetX = player.x + randomRange(-90, 90);
-      const targetY = player.y + randomRange(-30, 30);
+      const targetX = player.x + randomRange(-110, 110);
+      const targetY = player.y + randomRange(-70, 70);
       const angle = Math.atan2(targetY - boss.y, targetX - boss.x);
-      enemyBullets.push({ x: boss.x, y: boss.y + 42, vx: Math.cos(angle) * 520, vy: Math.sin(angle) * 520, radius: 10, color: '#38bdf8' });
+      enemyBullets.push({ x: boss.x, y: boss.y + 42, vx: Math.cos(angle) * (540 + boss.phase * 20), vy: Math.sin(angle) * (540 + boss.phase * 20), radius: 10, color: '#38bdf8' });
     }
     setMessage('Precision missiles locked on.', 2000);
   }
@@ -196,7 +196,10 @@ function updateGame(delta) {
   const moveSpeed = player.speed * (player.dash > 0 ? 3.2 : 1);
   if (keys.left) player.x -= moveSpeed * delta;
   if (keys.right) player.x += moveSpeed * delta;
+  if (keys.up) player.y -= moveSpeed * delta;
+  if (keys.down) player.y += moveSpeed * delta;
   player.x = clamp(player.x, player.radius + 24, width - player.radius - 24);
+  player.y = clamp(player.y, player.radius + 24, height - player.radius - 24);
 
   if (player.dash > 0) player.dash -= delta;
   if (player.dashCooldown > 0) player.dashCooldown -= delta;
@@ -504,6 +507,8 @@ function initialize() {
   window.addEventListener('keydown', (event) => {
     if (event.key === 'a' || event.key === 'ArrowLeft') keys.left = true;
     if (event.key === 'd' || event.key === 'ArrowRight') keys.right = true;
+    if (event.key === 'w' || event.key === 'ArrowUp') keys.up = true;
+    if (event.key === 's' || event.key === 'ArrowDown') keys.down = true;
     if (event.key === 'Shift' && player.dashCooldown <= 0 && gameActive) {
       player.dash = 0.25;
       player.dashCooldown = 1.8;
@@ -514,6 +519,8 @@ function initialize() {
   window.addEventListener('keyup', (event) => {
     if (event.key === 'a' || event.key === 'ArrowLeft') keys.left = false;
     if (event.key === 'd' || event.key === 'ArrowRight') keys.right = false;
+    if (event.key === 'w' || event.key === 'ArrowUp') keys.up = false;
+    if (event.key === 's' || event.key === 'ArrowDown') keys.down = false;
   });
 
   window.addEventListener('resize', resizeCanvas);
