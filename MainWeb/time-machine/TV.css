@@ -1,0 +1,62 @@
+body{
+  background-color: #2c6680;
+}
+.headDiv{
+  display: flex;
+  flex-direction: row;
+  height: 100px;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  left: 0;
+  background-color: rgb(40,40,40);
+  color: #ffd726;
+  z-index: 1000;
+}
+main{
+  margin-top: 150px;
+}
+h2{
+  color:#F6DC6B;
+}
+p{
+  color:#F6DC6B;
+}
+.mainHeader{
+  display: inline;
+  width: 12.5%;
+  font-size: 200%;
+}
+.imgHead{
+  display: inline;
+  float: left;
+  width: 100px;
+  height: 100px;
+  transition: transform 0.2s ease-in, 0.2s ease-out;
+}
+.imgHead:hover{
+  transform: scale(1.1);
+}
+.navList{
+  flex: 1;
+  list-style: none;
+  text-decoration: none;
+}
+.navList li .a{
+  display: inline-block;
+  color: #F6DC6B;
+  text-decoration: none;
+  padding: 5px;
+  transition: transform 0.2s ease-in, 0.2s ease-out;
+  font-size: 120%;
+}
+.navList li{
+  float: left;
+  padding: 10px;
+  margin-top: 20px;
+}
+.navList li .a:hover{
+  background-color: #F6DC6B;
+  color: rgb(40, 40, 40);
+  
+}
