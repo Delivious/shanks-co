@@ -60,3 +60,31 @@ p{
   color: rgb(40, 40, 40);
   
 }
+.fash1{
+  position: static;
+  width:25%;
+  height:25%;
+  top: 8px;
+  left: 16px;
+}
+.fash2{
+  position: absolute;
+  width:25%;
+  height:25%;
+  top: 8px;
+  right: 16px;
+}
+.fash3{
+  position: absolute;
+  width:25%;
+  height:25%;
+  bottom: 8px;
+  left: 10px;
+}
+.fash4{
+  position: absolute;
+  width:25%;
+  height:25%;
+  bottom: 8px;
+  right: 16px;
+}
