@@ -14,7 +14,7 @@ body{
   z-index: 1000;
 }
 main{
-  margin-top: 150px;
+  margin-top: 125px;
 }
 h2{
   color:#F6DC6B;
@@ -58,5 +58,42 @@ p{
 .navList li .a:hover{
   background-color: #F6DC6B;
   color: rgb(40, 40, 40);
+  
+}
+
+.mario{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 25px;
+  height:25px;
+}
+.simp{
+  position: static;
+  top: 8px;
+  left: 16px;
+  width: 25px;
+  height:25px;
+}
+.tmnt{
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  width: 25px;
+  height:25px;
+}
+.tales{
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  width: 25px;
+  height:25px;
+}
+.gadget{
+  position: absolute;
+  bottom: 8px;
+  right: 16px;
+  width: 25px;
+  height:25px;
   
 }
