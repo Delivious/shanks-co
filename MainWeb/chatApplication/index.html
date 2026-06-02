@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chitter Chatter - Chat Application</title>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <h1>Chitter Chatter</h1>
+            <p>Real-time chat application</p>
+            <form id="loginForm">
+                <input type="text" id="usernameInput" placeholder="Enter your username" required>
+                <input type="text" id="roomIdInput" placeholder="Enter room ID (or leave blank for new room)" >
+                <button type="submit">Enter Chat</button>
+            </form>
+            <p class="error-message" id="loginError"></p>
+        </div>
+    </div>
+
+    <!-- Chat Screen -->
+    <div id="chatScreen" class="screen">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2 id="roomTitle">Chitter Chatter</h2>
+                <div class="header-info">
+                    <span id="usernameDisplay" class="username-badge"></span>
+                    <span id="userCount" class="user-count">Users: 0</span>
+                </div>
+            </div>
+
+            <div class="chat-body">
+                <div class="messages-container" id="messagesContainer">
+                    <div class="welcome-message">
+                        <p>Welcome to the chat! Share your room ID with others to join.</p>
+                        <div class="room-id-display">
+                            <p>Room ID: <code id="displayRoomId"></code></p>
+                            <button type="button" id="copyRoomBtn" class="copy-btn">Copy Room ID</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-users" id="typingUsers"></div>
+                </div>
+            </div>
+
+            <div class="chat-footer">
+                <div class="message-input-group">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        placeholder="Type a message..." 
+                        class="message-input"
+                    >
+                    <button id="sendBtn" type="button" class="send-btn">Send</button>
+                </div>
+                <button id="leaveBtn" type="button" class="leave-btn">Leave Chat</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="chitterChatter.js"></script>
+</body>
+</html>

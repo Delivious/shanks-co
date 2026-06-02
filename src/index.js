@@ -25,6 +25,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 const rooms = {};
 const platformerRooms = {};
+const chatRooms = {}; // { roomId: { messages: [], users: {username: socketId}, typingUsers: [] } }
 const PLATFORMER_WORLD_WIDTH = 800;
 const PLATFORMER_WORLD_HEIGHT = 3000;
 const PLATFORMER_FINISH_Y = 80;
@@ -519,6 +520,105 @@ io.on("connection", (socket) => {
     leaveRoom(roomId, username, socket);
   });
 
+  // ================= CHAT EVENTS =================
+  socket.on("chat:join-room", ({ roomId, username }) => {
+    if (!username) {
+      socket.emit("chat:error", "Login required");
+      return;
+    }
+
+    // Create room if it doesn't exist
+    if (!chatRooms[roomId]) {
+      chatRooms[roomId] = {
+        messages: [],
+        users: {},
+        typingUsers: []
+      };
+    }
+
+    const room = chatRooms[roomId];
+    room.users[username] = socket.id;
+
+    // Join the socket to the room
+    socket.join(roomId);
+
+    // Send message history to the joining user
+    socket.emit("chat:history", room.messages);
+
+    // Notify others that user joined
+    io.to(roomId).emit("chat:user-joined", {
+      username,
+      usersInRoom: Object.keys(room.users)
+    });
+  });
+
+  socket.on("chat:send-message", ({ roomId, username, message }) => {
+    if (!username || !message) {
+      socket.emit("chat:error", "Invalid message");
+      return;
+    }
+
+    const room = chatRooms[roomId];
+    if (!room || !room.users[username]) {
+      socket.emit("chat:error", "Not in chat room");
+      return;
+    }
+
+    const messageData = {
+      id: Date.now(),
+      username,
+      message,
+      timestamp: new Date().toISOString()
+    };
+
+    room.messages.push(messageData);
+
+    // Remove typing indicator when message sent
+    room.typingUsers = room.typingUsers.filter(u => u !== username);
+
+    // Broadcast message to all users in room
+    io.to(roomId).emit("chat:message", messageData);
+    io.to(roomId).emit("chat:typing-update", room.typingUsers);
+  });
+
+  socket.on("chat:typing", ({ roomId, username }) => {
+    const room = chatRooms[roomId];
+    if (!room || !room.users[username]) return;
+
+    if (!room.typingUsers.includes(username)) {
+      room.typingUsers.push(username);
+    }
+
+    io.to(roomId).emit("chat:typing-update", room.typingUsers);
+  });
+
+  socket.on("chat:stop-typing", ({ roomId, username }) => {
+    const room = chatRooms[roomId];
+    if (!room) return;
+
+    room.typingUsers = room.typingUsers.filter(u => u !== username);
+    io.to(roomId).emit("chat:typing-update", room.typingUsers);
+  });
+
+  socket.on("chat:leave-room", ({ roomId, username }) => {
+    const room = chatRooms[roomId];
+    if (!room) return;
+
+    delete room.users[username];
+    room.typingUsers = room.typingUsers.filter(u => u !== username);
+
+    socket.leave(roomId);
+
+    if (Object.keys(room.users).length === 0) {
+      delete chatRooms[roomId];
+    } else {
+      io.to(roomId).emit("chat:user-left", {
+        username,
+        usersInRoom: Object.keys(room.users)
+      });
+    }
+  });
+
   socket.on("disconnect", () => {
     Object.values(rooms).forEach((room) => {
       if (room.hostId === socket.id) {
@@ -554,6 +654,25 @@ io.on("connection", (socket) => {
           });
           broadcastPlatformerRoomList();
         }
+      }
+    });
+
+    // Clean up chat rooms
+    Object.entries(chatRooms).forEach(([roomId, room]) => {
+      const disconnectedUser = Object.entries(room.users).find(([, id]) => id === socket.id);
+      if (!disconnectedUser) return;
+
+      const [username] = disconnectedUser;
+      delete room.users[username];
+      room.typingUsers = room.typingUsers.filter(u => u !== username);
+
+      if (Object.keys(room.users).length === 0) {
+        delete chatRooms[roomId];
+      } else {
+        io.to(roomId).emit("chat:user-left", {
+          username,
+          usersInRoom: Object.keys(room.users)
+        });
       }
     });
   });
