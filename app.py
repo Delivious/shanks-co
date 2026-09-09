@@ -1,4 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, request, flash, abort, session, jsonify 
+from itsdangerous import SignatureExpired, URLSafeTimedSerializer
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import FlaskForm
 from werkzeug.utils import secure_filename
@@ -6,12 +7,13 @@ from flask_wtf.file import FileAllowed, FileRequired
 from wtforms.validators import DataRequired
 from wtforms import StringField, SubmitField, SearchField, validators, PasswordField
 from wtforms.fields import FileField
+from flask_mail import Mail, Message
 import sqlite3
 import os
 import shutil
 
 app = Flask(__name__)
-
+mail = Mail(app)
 links = {
             'Home':'index.html',
             'About':'MainWeb/about.html',
@@ -20,10 +22,37 @@ links = {
             'Music':'MainWeb/music.html',
             'Products':'MainWeb/products.html'
         }
-
+MAIL_SERVER = 'smtp.gmail.com'
+MAIL_PORT = 465
+MAIL_USERNAME = os.getenv('EMAIL_USER')
+MAIL_PASSWORD = os.getenv('EMAIL_PASS')
+MAIL_USE_TLS = False
+MAIL_USE_SSL = True 
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static/uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 app.secret_key = os.getenv('key', None)
+
+def db_connection():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def generate_verification_token(email):
+    serializer = URLSafeTimedSerializer(app.secret_key)
+    return serializer.dumps(email, salt=app.secret_key)
+
+def verify_email(token):
+    serializer = URLSafeTimedSerializer(app.secret_key)
+    try:
+        email = serializer.loads(token, salt=app.secret_key, max_age=3600)
+    except SignatureExpired:
+        return None
+    return email
+
+def send_verification_email(email, verification_link):
+    msg = Message('Email Verification', sender=MAIL_USERNAME, recipients=[email])
+    msg.body = f'Please click the following link to verify your email: {verification_link}'
+    mail.send(msg)
 
 @app.route('/')
 def home():
@@ -48,4 +77,63 @@ def music():
 @app.route('/Products')
 def products():
     return render_template('MainWeb/products.html', links=links)
-app.run(debug=True, port=5000, host='10.30.1.18')
+
+@app.route('/login')
+def login():
+    return render_template('MainWeb/LoginPages/logIn.html', links=links)
+
+@app.route('/signup')
+def signup():
+    return render_template('MainWeb/LoginPages/signUp.html', links=links)
+
+@app.route('/signupForm', methods=['POST', 'GET'])
+def signupForm():
+    if request.method == 'POST':
+        # Handle the signup form submission
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # Here you would typically add code to create the user in your database
+        stored_password = generate_password_hash(password)
+        with db_connection() as db_connection:
+            db_connection.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', (username, email, stored_password))
+        flash('Signup successful! Please check your email to verify your account.', 'success')
+
+        # Send verification email
+        token = generate_verification_token(email)
+        verification_link = url_for('verify_email', token=token, _external=True)
+        send_verification_email(email, verification_link)
+
+        return redirect(url_for('login'))
+
+    return render_template('MainWeb/LoginPages/signUp.html', links=links)
+
+@app.route('/verify_email/<token>')
+def verify_email(token):
+    email = verify_email(token)
+    if email:
+        flash('Email verified successfully!', 'success')
+    else:
+        flash('Email verification link is invalid or has expired.', 'danger')
+    return redirect(url_for('login'))
+
+@app.route('/loginForm', methods=['POST', 'GET'])
+def loginForm():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        with db_connection() as db_connection:
+            user = db_connection.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+            if user and check_password_hash(user['password'], password):
+                flash('Login successful!', 'success')
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                return redirect(url_for('home'))
+            else:
+                flash('Invalid email or password.', 'danger')
+
+    return render_template('MainWeb/LoginPages/logIn.html', links=links)
+
+app.run(debug=True, port=5000, host='10.30.2.12')

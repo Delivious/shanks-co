@@ -21,8 +21,12 @@
               <li><a class="a" href="{{ url_for('contact') }}">Contacts</a></li>
               <li><a class="a" href="{{ url_for('games') }}">Games</a></li>
               <li><a class="a" href="{{ url_for('music') }}">Music</a></li>
-              <li><a href="MainWeb/LoginPages/logIn.html"><div class="logIn">Log In!</div></a></li>
-              <li><a href="MainWeb/LoginPages/signUp.html"><div class="signUp">Sign Up!</div></a></li>
+              <li><a href="{{ url_for('login') }}"><div class="logIn">Log In!</div></a></li>
+              <li><a href="{{ url_for('signup') }}"><div class="signUp">Sign Up!</div></a></li>
+              {% if session.get('user_id') %}
+                <li><a href="{{ url_for('logout') }}"><div class="logOut">Log Out!</div></a></li>
+                <li>{{ session.get('username') }}</li>
+              {% endif %}
             </ul>
         </nav>
   </header>

@@ -1,28 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="../Assets/styles.css">
+  <link rel="stylesheet" href="../../static/Assets/styles.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Games</title>
-  <link rel="icon" type="image/x-icon" href="../Assets/imgs/favicon.ico">
+  <title>Home</title>
+  <link rel="icon" type="image/x-icon" href="../../static/Assets/imgs/favicon.ico">
 </head>
 <body>
   <header class="headDiv">
-    <a href="../index.html" class="aImg">
-      <img src="../Assets/imgs/projectnevermore.png" alt="Shank's Co." class="imgHead">
+    <a href="{{ url_for('home') }}" class="aImg">
+      <img src="../../static/Assets/imgs/projectnevermore.png" alt="Shank's Co." class="imgHead">
     </a>
     <div class="headDivSpacer"></div>
     <h1 class="mainHeader">Shank's Co.</h1>
         <nav class="navigation">
             <ul class="navList">
-              <li><a class="a" href="../MainWeb/products.html">Products</a></li>
-              <li><a class="a" href="../MainWeb/about.html">About</a></li>
-              <li><a class="a" href="../MainWeb/contact.html">Contacts</a></li>
-              <li><a class="a" href="../MainWeb/games.html">Games</a></li>
-              <li><a class="a" href="../MainWeb/music.html">Music</a></li>
-              <li><a href="../MainWeb/LoginPages/logIn.html"><div class="logIn">Log In!</div></a></li>
-              <li><a href="../MainWeb/LoginPages/signUp.html"><div class="signUp">Sign Up!</div></a></li>
+              <li><a class="a" href="{{ url_for('products') }}">Products</a></li>
+              <li><a class="a" href="{{ url_for('about') }}">About</a></li>
+              <li><a class="a" href="{{ url_for('contact') }}">Contacts</a></li>
+              <li><a class="a" href="{{ url_for('games') }}">Games</a></li>
+              <li><a class="a" href="{{ url_for('music') }}">Music</a></li>
+              <li><a href="{{ url_for('login') }}"><div class="logIn">Log In!</div></a></li>
+              <li><a href="{{ url_for('signup') }}"><div class="signUp">Sign Up!</div></a></li>
+              {% if session.get('user_id') %}
+                <li><a href="{{ url_for('logout') }}"><div class="logOut">Log Out!</div></a></li>
+                <li>{{ session.get('username') }}</li>
+              {% endif %}
             </ul>
         </nav>
   </header>
