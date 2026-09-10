@@ -10,9 +10,11 @@ from wtforms.fields import FileField
 from flask_mail import Mail, Message
 import sqlite3
 import os
+from dotenv import load_dotenv
 import shutil
 
 app = Flask(__name__)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 mail = Mail(app)
 links = {
             'Home':'index.html',
@@ -22,6 +24,7 @@ links = {
             'Music':'MainWeb/music.html',
             'Products':'MainWeb/products.html'
         }
+load_dotenv('settings.env')
 MAIL_SERVER = 'smtp.gmail.com'
 MAIL_PORT = 465
 MAIL_USERNAME = os.getenv('EMAIL_USER')
@@ -30,9 +33,10 @@ MAIL_USE_TLS = False
 MAIL_USE_SSL = True 
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static/uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 app.secret_key = os.getenv('key', None)
 
-def db_connection():
+def dbConnection():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     return conn
@@ -41,7 +45,7 @@ def generate_verification_token(email):
     serializer = URLSafeTimedSerializer(app.secret_key)
     return serializer.dumps(email, salt=app.secret_key)
 
-def verify_email(token):
+def verify_email_token(token):
     serializer = URLSafeTimedSerializer(app.secret_key)
     try:
         email = serializer.loads(token, salt=app.secret_key, max_age=3600)
@@ -53,6 +57,8 @@ def send_verification_email(email, verification_link):
     msg = Message('Email Verification', sender=MAIL_USERNAME, recipients=[email])
     msg.body = f'Please click the following link to verify your email: {verification_link}'
     mail.send(msg)
+with dbConnection() as db_connection:
+    db_connection.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, email TEXT NOT NULL, password TEXT NOT NULL)')
 
 @app.route('/')
 def home():
@@ -96,7 +102,7 @@ def signupForm():
 
         # Here you would typically add code to create the user in your database
         stored_password = generate_password_hash(password)
-        with db_connection() as db_connection:
+        with dbConnection() as db_connection:
             db_connection.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', (username, email, stored_password))
         flash('Signup successful! Please check your email to verify your account.', 'success')
 
@@ -124,7 +130,7 @@ def loginForm():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        with db_connection() as db_connection:
+        with dbConnection() as db_connection:
             user = db_connection.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
             if user and check_password_hash(user['password'], password):
                 flash('Login successful!', 'success')
