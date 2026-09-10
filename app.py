@@ -15,7 +15,7 @@ import shutil
 
 app = Flask(__name__)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-mail = Mail(app)
+
 links = {
             'Home':'index.html',
             'About':'MainWeb/about.html',
@@ -25,12 +25,12 @@ links = {
             'Products':'MainWeb/products.html'
         }
 load_dotenv('settings.env')
-MAIL_SERVER = 'smtp.gmail.com'
-MAIL_PORT = 465
-MAIL_USERNAME = os.getenv('EMAIL_USER')
-MAIL_PASSWORD = os.getenv('EMAIL_PASS')
-MAIL_USE_TLS = False
-MAIL_USE_SSL = True 
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER')
+app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASS')
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+mail = Mail(app)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static/uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -54,7 +54,7 @@ def verify_email_token(token):
     return email
 
 def send_verification_email(email, verification_link):
-    msg = Message('Email Verification', sender=MAIL_USERNAME, recipients=[email])
+    msg = Message('Email Verification', sender=app.config['MAIL_USERNAME'], recipients=[email])
     msg.body = f'Please click the following link to verify your email: {verification_link}'
     mail.send(msg)
 with dbConnection() as db_connection:
@@ -103,7 +103,11 @@ def signupForm():
         # Here you would typically add code to create the user in your database
         stored_password = generate_password_hash(password)
         with dbConnection() as db_connection:
-            db_connection.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', (username, email, stored_password))
+            if db_connection.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone():
+                flash('Email already registered.', 'danger')
+                return redirect(url_for('signup'))
+            else:
+                db_connection.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', (username, email, stored_password))
         flash('Signup successful! Please check your email to verify your account.', 'success')
 
         # Send verification email
@@ -117,7 +121,7 @@ def signupForm():
 
 @app.route('/verify_email/<token>')
 def verify_email(token):
-    email = verify_email(token)
+    email = verify_email_token(token)
     if email:
         flash('Email verified successfully!', 'success')
     else:
@@ -141,6 +145,11 @@ def loginForm():
                 flash('Invalid email or password.', 'danger')
 
     return render_template('MainWeb/LoginPages/logIn.html', links=links)
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('login'))
 
-app.run(debug=True, port=5000, host='10.30.2.10')
+#app.run(debug=True, port=5000, host='10.30.2.10')
 app.run(debug=True, port=5000, host='10.30.2.12')
