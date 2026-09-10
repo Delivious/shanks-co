@@ -136,4 +136,5 @@ def loginForm():
 
     return render_template('MainWeb/LoginPages/logIn.html', links=links)
 
+app.run(debug=True, port=5000, host='10.30.2.10')
 app.run(debug=True, port=5000, host='10.30.2.12')
