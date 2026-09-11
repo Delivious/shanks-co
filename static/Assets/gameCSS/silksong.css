@@ -19,7 +19,7 @@
 
 }
 #body1{
-    background-image: url("./assets/background2.png");
+    background-image: url("../gameAssets/assets/background2.png");
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
@@ -42,7 +42,7 @@
     font-size: 150%;
     
     border: 6px solid darkgreen;
-    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-image: url("../gameAssets/assets/mossBorder.avif") 30 round;
     border-radius: 14px;
     background-image: image-set("./assets/rock.jpg");
     transition: transform 0.2s ease-out;
@@ -75,9 +75,9 @@
     font-size: 150%;
     
     border: 6px solid darkgreen;
-    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-image: url("../gameAssets/assets/mossBorder.avif") 30 round;
     border-radius: 14px;
-    background-image: image-set("./assets/rock.jpg");
+    background-image: image-set("../gameAssets/assets/rock.jpg");
     transition: transform 0.2s ease-out;
 }
 #rps{
@@ -115,7 +115,7 @@
     font-size: 150%;
     
     border: 6px solid darkgreen;
-    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-image: url("../gameAssets/assets/mossBorder.avif") 30 round;
     border-radius: 14px;
     background-image: image-set("./assets/rock.jpg");
     transition: transform 0.2s ease-out;
@@ -172,9 +172,9 @@
     font-size: 150%;
     
     border: 6px solid darkgreen;
-    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-image: url("../gameAssets/assets/mossBorder.avif") 30 round;
     border-radius: 14px;
-    background-image: image-set("./assets/rock.jpg");
+    background-image: image-set("../gameAssets/assets/rock.jpg");
     transition: transform 0.2s ease-out;
 }
 #threefold:hover{
@@ -352,7 +352,7 @@
     position: fixed;
     top: 0px;
     left: 0px;
-    background-image: url("./assets/rock.jpg");
+    background-image: url("../gameAssets/assets/rock.jpg");
     border: none;
     color: green;
     padding: 10px 20px;
@@ -513,7 +513,7 @@
     font-size: 150%;
     
     border: 6px solid darkgreen;
-    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-image: url("../gameAssets/assets/mossBorder.avif") 30 round;
     border-radius: 14px;
     background-image: image-set("./assets/rock.jpg");
     transition: transform 0.2s ease-out;
@@ -564,7 +564,7 @@
     position: fixed;
     top: 0px;
     left: 125px;
-    background-image: url("./assets/rock.jpg");
+    background-image: url("../gameAssets/assets/rock.jpg");
     border: none;
     color: green;
     padding: 10px 20px;
@@ -664,9 +664,9 @@
     font-size: 150%;
     
     border: 6px solid darkgreen;
-    border-image: url("./assets/mossBorder.avif") 30 round;
+    border-image: url("../gameAssets/assets/mossBorder.avif") 30 round;
     border-radius: 14px;
-    background-image: image-set("./assets/rock.jpg");
+    background-image: image-set("../gameAssets/assets/rock.jpg");
     transition: transform 0.2s ease-out;
 }
 #paleOil:hover{

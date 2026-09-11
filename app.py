@@ -92,6 +92,10 @@ def login():
 def signup():
     return render_template('MainWeb/LoginPages/signUp.html', links=links)
 
+@app.route('/Games/SilksongClicker')
+def silksong_clicker():
+    return render_template('MainWeb/games/silksongClicker/index.html', links=links)
+
 @app.route('/signupForm', methods=['POST', 'GET'])
 def signupForm():
     if request.method == 'POST':
@@ -152,4 +156,5 @@ def logout():
     return redirect(url_for('login'))
 
 #app.run(debug=True, port=5000, host='10.30.2.10')
-app.run(debug=True, port=5000, host='10.30.2.12')
+app.run(debug=True, port=5000, host='172.17.17.87')
+#app.run(debug=True, port=5000, host='10.30.2.12')
