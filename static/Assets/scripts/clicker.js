@@ -124,7 +124,7 @@ function spawnShanks() {
     shank.classList.add("shank");
     let direction = 0.5;
     // prefer a global THESHANKS array if provided, otherwise use the three images in ./THESHANKS/
-    const defaultDir = "THESHANKS";
+    const defaultDir = "../gameAssets/THESHANKS";
     const defaultFiles = [
       `${defaultDir}/ninjashanks.png`, //he steals all the upgrades and sells them to you at half price
       `${defaultDir}/tabbycatshanks.png`, //kitty cat finds and give you your worth in rosearys from 10 minutes
@@ -347,7 +347,7 @@ document.addEventListener("mousedown",()=>{
   if (canPlay){
     canPlay=false
     setTimeout(()=>{
-      lofiBeat = (new Audio("assets/silkMusic.mp3")).play()
+      lofiBeat = (new Audio("../gameAssets/assets/silkMusic.mp3")).play()
     },1)
   }
   setInterval(()=>{
@@ -355,7 +355,7 @@ document.addEventListener("mousedown",()=>{
       if (canPlay){
         canPlay=false
         setTimeout(()=>{
-          lofiBeat = (new Audio("assets/silkMusic.mp3")).play()
+          lofiBeat = (new Audio("../gameAssets/assets/silkMusic.mp3")).play()
         },1)
         setTimeout(()=>{
           canPlay=true
@@ -407,7 +407,7 @@ function rebirth(){
     purchase2 = false
     purchase3 = false
     upg1.style.display = "block"
-    upg1Img.src = "assets/mouse1.png"
+    upg1Img.src = "../gameAssets/assets/mouse1.png"
     upg2.style.display = "block"
     upg3.style.display = "block"
     upg4.style.display = "block"
@@ -572,7 +572,7 @@ upg1.addEventListener("click", () => {
   //checks if purchased and have enough for it
   if (roseValue >= clickcost*priceMultiplier && !purchase1) {
     roseValue -= clickcost*priceMultiplier
-    upg1Img.src = "assets/mouse2.png"
+    upg1Img.src = "../gameAssets/assets/mouse2.png"
     multiplier *= 2
     purchase1 = true
     clickcost *=2
@@ -580,7 +580,7 @@ upg1.addEventListener("click", () => {
 
   else if (roseValue >= clickcost*priceMultiplier && !purchase2) {
     roseValue -= clickcost*priceMultiplier
-    upg1Img.src = "assets/mouse3.png"
+    upg1Img.src = "../gameAssets/assets/mouse3.png"
     multiplier *= 2
     purchase2 = true
     clickcost *=2
@@ -596,14 +596,14 @@ upg1.addEventListener("click", () => {
 
   else if (roseValue >= clickcost*priceMultiplier && !purchase4) {
     roseValue -= clickcost*priceMultiplier
-    upg1Img.src = "assets/mouse5.png"
+    upg1Img.src = "../gameAssets/assets/mouse5.png"
     multiplier *= 2
     purchase4 = true
     clickcost *=2
   }
   else if (roseValue >= clickcost*priceMultiplier && !purchase5) {
     roseValue -= clickcost*priceMultiplier
-    upg1Img.src = "assets/mouse6.png"
+    upg1Img.src = "../gameAssets/assets/mouse6.png"
     multiplier *= 2
     purchase5 = true
     clickcost *=2
@@ -766,7 +766,7 @@ function spawnParticles() {
   for (let i = 0; i < particleCount; i++) {
     const particle = document.createElement('img')
     particle.className = 'particle'
-    particle.src = 'https://www.silk-song.org/_next/image?url=%2Fimages%2Fitems%2Frosaries.png&w=640&q=75'
+    particle.src = '../gameAssets/assets/rosarieNecklace.png'
 
     // start at (or near) the hornet button center
     const jitterStartX = startX + (Math.random() - 0.5) * btnRect.width * 0.5

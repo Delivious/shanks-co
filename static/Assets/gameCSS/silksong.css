@@ -515,7 +515,7 @@
     border: 6px solid darkgreen;
     border-image: url("../gameAssets/assets/mossBorder.avif") 30 round;
     border-radius: 14px;
-    background-image: image-set("./assets/rock.jpg");
+    background-image: image-set("../gameAssets/assets/rock.jpg");
     transition: transform 0.2s ease-out;
 }
 #rebirthBtnToRebirth:hover{
