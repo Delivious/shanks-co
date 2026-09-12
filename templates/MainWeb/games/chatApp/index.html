@@ -3,57 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
+    <title>Shank's Co. Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Assets/gameCSS/chatApp.css') }}">
 </head>
 <body>
-    <h1>Chat App</h1>
-    <p>Chat with other users in real time! This is a work in progress, so please be patient as we continue to improve this feature. Enjoy!</p>
-    <div id="chatContainer">
-        <div id="chatMessages">
-            {% for message in messages %}
-                <div class="chatMessage">
-                    <strong>{{ message.username }}:</strong> {{ message.content }}
+    <div class="chat-app-shell">
+        <aside id="serverContainer" class="server-panel">
+            <div class="panel-badge">Community</div>
+            <a class="create-server-button" href="{{ url_for('create_server') }}">Create Server</a>
+
+            <div class="panel-header">
+                <h2>Servers</h2>
+                {% if session.get('user_id') and session.get('server_id') %}
+                    <form method="POST" action="{{ url_for('delete_server', server_id=session.get('server_id')) }}" onsubmit="return confirm('Are you sure you want to delete this server?');">
+                        <button type="submit" class="delete-server-button">Delete Server</button>
+                    </form>
+                {% endif %}
+            </div>
+
+            <div id="searchBar" class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search for servers...">
+                <button id="searchButton" type="button">Search</button>
+            </div>
+
+            <ul id="serverList" class="server-list">
+                {% for server in servers %}
+                    <li class="server-item">
+                        <a href="{{ url_for('chat_app', server_id=server.id) }}" class="server-link">
+                            <span class="server-icon">S</span>
+                            <span>{{ server.name }}</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </aside>
+
+        <main id="chatContainer" class="chat-panel">
+            <header class="chat-header">
+                <div>
+                    <p class="eyebrow">Shank's Co.</p>
+                    <h1>Chat App</h1>
                 </div>
-            {% endfor %}
+                <div class="status-indicator">Live</div>
+            </header>
+
+            <p class="chat-subtitle">Chat with other users in real time! This is a work in progress, so please be patient as we continue to improve this feature. Enjoy!</p>
+
+            <div id="chatMessages" class="chat-messages">
+                {% for message in messages %}
+                    {% if message.server_id == session.get('server_id') %}
+                        <div class="chatMessage">
+                            <strong>{{ message.username }}:</strong>
+                            <span>{{ message.content }}</span>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
             <div class="messageBox">
                 <form method="POST" action="{{ url_for('chat_app') }}">
+                    <input type="hidden" name="server_id" value="{{ session.get('server_id') }}">
                     <input type="text" name="message" placeholder="Type your message..." required>
                     <button type="submit">Send</button>
                 </form>
             </div>
-        </div>
-        <script>
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        </script>
-        <script>
-            setInterval(function() {
-                fetch('{{ url_for("chat_app") }}')
-                    .then(response => response.text())
-                    .then(data => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(data, 'text/html');
-                        const newMessages = doc.getElementById('chatMessages').innerHTML;
-                        chatMessages.innerHTML = newMessages;
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                    });
-            }, 100);
-        </script>
-        <input type="text" id="chatInput" placeholder="Type your message...">
-        <button id="sendButton">Send</button>
-    </div>
-    <div id="serverContainer">
-        <a href="{{ url_for('create_server') }}">Create Server!</a>
-        <h2>Servers Available:</h2>
-        <div id="searchBar">
-            <input type="text" id="searchInput" placeholder="Search for servers...">
-            <button id="searchButton">Search</button>
-        </div>
-        <ul id="serverList">
-            {% for server in servers %}
-                <li class="server-item">{{ server }}</li>
-            {% endfor %}
-        </ul>
+
+            <script>
+                const chatMessages = document.getElementById('chatMessages');
+                if (chatMessages) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            </script>
+            <script>
+                setInterval(function() {
+                    const serverId = '{{ session.get("server_id") }}';
+                    fetch('{{ url_for("chat_app") }}' + (serverId ? '?server_id=' + encodeURIComponent(serverId) : ''))
+                        .then(response => response.text())
+                        .then(data => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(data, 'text/html');
+                            const newMessages = doc.getElementById('chatMessages');
+                            if (chatMessages && newMessages) {
+                                chatMessages.innerHTML = newMessages.innerHTML;
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                            }
+                        });
+                }, 100);
+            </script>
+        </main>
     </div>
 </body>
 </html>

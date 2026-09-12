@@ -40,17 +40,11 @@
           <div class="gameDiv">Silksong Clicker</div>
         </a>
       </div>
-      <div class="container">
-          <img class="gameImage" src="../Assets/imgs/platformer.png">
-          <a href="../MainWeb/games/platformer/index.html">
-            <div class="gameDiv">Platformer Race</div>
-          </a>
-      </div>
     </div>
      <div class="row">  
       <div class="container">
-        <img class="gameImage" src="../Assets/imgs/yippee.gif">
-        <a href="../MainWeb/games/misc/index.html">
+        <img class="gameImage" src="../../static/Assets/imgs/yippee.gif">
+        <a href="{{ url_for('misc_games') }}">
           <div class="gameDiv">Misc Games [W.i.P.]</div>
         </a>
       </div>
@@ -63,18 +57,8 @@
     </div>
     <div class="row">
       <div class="container">
-        <img class="gameImage" src="../Assets/imgs/rockpaperandthescissors.avif">
-        <a href="../MainWeb/games/rockpaperscissors/game.html">
-          <div class="gameDiv">Rock Paper Scissors</div>
-        </a>
-      </div>
-      <div class="container">
-        <img class="gameImage" src="../Assets/imgs/yippee.gif">
-        <a href="../MainWeb/games/bossBattle/index.html">
-          <div class="gameDiv">Boss Battle</div>
-        </a>
-        <img class="gameImage" src="../Assets/imgs/chatApp.png">
-        <a href="chatApplication/index.html">
+        <img class="gameImage" src="../../static/Assets/imgs/chat.png">
+        <a href="{{ url_for('chat_app') }}">
           <div class="gameDiv">Chat Application</div>
         </a>
       </div>
@@ -88,7 +72,5 @@
     </div>
     
   </footer>
-  <script src="../Assets/scripts/usernamePlace.js"></script>
-  <script src="../Assets/scripts/logout.js"></script>
 </body>
 </html>

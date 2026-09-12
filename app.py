@@ -59,7 +59,7 @@ def send_verification_email(email, verification_link):
     mail.send(msg)
 with dbConnection() as db_connection:
     db_connection.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, email TEXT NOT NULL, password TEXT NOT NULL)')
-    db_connection.execute('CREATE TABLE IF NOT EXISTS servers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT NOT NULL)')
+    db_connection.execute('CREATE TABLE IF NOT EXISTS servers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT NOT NULL, creator_id INTEGER NOT NULL, FOREIGN KEY (creator_id) REFERENCES users(id))')
     db_connection.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, username TEXT NOT NULL, content TEXT NOT NULL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (server_id) REFERENCES servers(id))')
 
 @app.route('/')
@@ -93,6 +93,10 @@ def login():
 @app.route('/signup')
 def signup():
     return render_template('MainWeb/LoginPages/signUp.html', links=links)
+
+@app.route('/Games/Misc')
+def misc_games():
+    return render_template('MainWeb/games/misc/index.html', links=links)
 
 @app.route('/Games/SilksongClicker')
 def silksong_clicker():
@@ -162,21 +166,35 @@ def logout():
     return redirect(url_for('login'))
 @app.route('/Games/ChatApp', methods=['GET', 'POST'])
 def chat_app():
+    selected_server_id = request.args.get('server_id') or request.form.get('server_id')
+    if selected_server_id is not None:
+        session['server_id'] = int(selected_server_id)
+
     with dbConnection() as db_connection:
         servers = db_connection.execute('SELECT * FROM servers').fetchall()
         messages = db_connection.execute('SELECT * FROM messages ORDER BY timestamp DESC').fetchall()
+
     if 'user_id' not in session:
         flash('You need to be logged in to access the chat.', 'danger')
         return redirect(url_for('login'))
+
     if request.method == 'POST':
         content = request.form.get('message')
-        if content:
+        server_id = request.form.get('server_id') or session.get('server_id')
+        if content and server_id:
             with dbConnection() as db_connection:
-                db_connection.execute('INSERT INTO messages (server_id, username, content) VALUES (?, ?, ?)', (session['server_id'], session['username'], content))
+                db_connection.execute(
+                    'INSERT INTO messages (server_id, username, content) VALUES (?, ?, ?)',
+                    (server_id, session['username'], content)
+                )
             flash('Message sent!', 'success')
-            return redirect(url_for('chat_app'))
+            return redirect(url_for('chat_app', server_id=server_id))
+
+    if not session.get('server_id') and servers:
+        session['server_id'] = servers[0]['id']
+
     return render_template('MainWeb/games/chatApp/index.html', links=links, servers=servers, messages=messages)
-@app.route('/Games/ChatApp/CreateServer', methods=['POST'])
+@app.route('/Games/ChatApp/CreateServer', methods=['POST', 'GET'])
 def create_server():
     if 'user_id' not in session:
         flash('You need to be logged in to create a server.', 'danger')
@@ -186,13 +204,27 @@ def create_server():
         description = request.form.get('serverDescription')
         if name and description:
             with dbConnection() as db_connection:
-                db_connection.execute('INSERT INTO servers (name, description) VALUES (?, ?)', (name, description))
+                db_connection.execute('INSERT INTO servers (name, description, creator_id) VALUES (?, ?, ?)', (name, description, session['user_id']))
             flash('Server created successfully!', 'success')
         else:
             flash('Please provide both a name and description for the server.', 'danger')
         return redirect(url_for('chat_app'))
     return render_template('MainWeb/games/chatApp/createServer.html', links=links)
+@app.route('/Games/ChatApp/DeleteServer/<int:server_id>', methods=['POST'])
+def delete_server(server_id):
+    if 'user_id' not in session:
+        flash('You need to be logged in to delete a server.', 'danger')
+        return redirect(url_for('login'))
+    with dbConnection() as db_connection:
+        if not db_connection.execute('SELECT * FROM servers WHERE id = ? AND creator_id = ?', (server_id, session['user_id'])).fetchone():
+            flash('You do not have permission to delete this server.', 'danger')
+        else:
+            db_connection.execute('DELETE FROM servers WHERE id = ? AND creator_id = ?', (server_id, session['user_id']))
+            db_connection.execute('DELETE FROM messages WHERE server_id = ?', (server_id,))
+    flash('Server deleted successfully!', 'success')
+    return redirect(url_for('chat_app'))
 #app.run(debug=True, port=5000, host='10.30.2.10')
 #app.run(debug=True, port=5000, host='172.17.17.87')
 #app.run(debug=True, port=5000, host='10.30.2.12')
-app.run(debug=True, port=5000, host='172.20.10.7')
+#app.run(debug=True, port=5000, host='172.20.10.7')
+app.run(debug=True, port=5000, host='192.168.50.59')
