@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+</head>
+<body>
+    <h1>Chat App</h1>
+    <p>Chat with other users in real time! This is a work in progress, so please be patient as we continue to improve this feature. Enjoy!</p>
+    <div id="chatContainer">
+        <div id="chatMessages">
+            {% for message in messages %}
+                <div class="chatMessage">
+                    <strong>{{ message.username }}:</strong> {{ message.content }}
+                </div>
+            {% endfor %}
+            <div class="messageBox">
+                <form method="POST" action="{{ url_for('chat_app') }}">
+                    <input type="text" name="message" placeholder="Type your message..." required>
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+        </div>
+        <script>
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        </script>
+        <script>
+            setInterval(function() {
+                fetch('{{ url_for("chat_app") }}')
+                    .then(response => response.text())
+                    .then(data => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(data, 'text/html');
+                        const newMessages = doc.getElementById('chatMessages').innerHTML;
+                        chatMessages.innerHTML = newMessages;
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    });
+            }, 100);
+        </script>
+        <input type="text" id="chatInput" placeholder="Type your message...">
+        <button id="sendButton">Send</button>
+    </div>
+    <div id="serverContainer">
+        <a href="{{ url_for('create_server') }}">Create Server!</a>
+        <h2>Servers Available:</h2>
+        <div id="searchBar">
+            <input type="text" id="searchInput" placeholder="Search for servers...">
+            <button id="searchButton">Search</button>
+        </div>
+        <ul id="serverList">
+            {% for server in servers %}
+                <li class="server-item">{{ server }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

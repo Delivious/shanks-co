@@ -59,6 +59,8 @@ def send_verification_email(email, verification_link):
     mail.send(msg)
 with dbConnection() as db_connection:
     db_connection.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, email TEXT NOT NULL, password TEXT NOT NULL)')
+    db_connection.execute('CREATE TABLE IF NOT EXISTS servers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT NOT NULL)')
+    db_connection.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, server_id INTEGER NOT NULL, username TEXT NOT NULL, content TEXT NOT NULL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (server_id) REFERENCES servers(id))')
 
 @app.route('/')
 def home():
@@ -158,7 +160,39 @@ def logout():
     session.clear()
     flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
-
+@app.route('/Games/ChatApp', methods=['GET', 'POST'])
+def chat_app():
+    with dbConnection() as db_connection:
+        servers = db_connection.execute('SELECT * FROM servers').fetchall()
+        messages = db_connection.execute('SELECT * FROM messages ORDER BY timestamp DESC').fetchall()
+    if 'user_id' not in session:
+        flash('You need to be logged in to access the chat.', 'danger')
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        content = request.form.get('message')
+        if content:
+            with dbConnection() as db_connection:
+                db_connection.execute('INSERT INTO messages (server_id, username, content) VALUES (?, ?, ?)', (session['server_id'], session['username'], content))
+            flash('Message sent!', 'success')
+            return redirect(url_for('chat_app'))
+    return render_template('MainWeb/games/chatApp/index.html', links=links, servers=servers, messages=messages)
+@app.route('/Games/ChatApp/CreateServer', methods=['POST'])
+def create_server():
+    if 'user_id' not in session:
+        flash('You need to be logged in to create a server.', 'danger')
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        name = request.form.get('serverName')
+        description = request.form.get('serverDescription')
+        if name and description:
+            with dbConnection() as db_connection:
+                db_connection.execute('INSERT INTO servers (name, description) VALUES (?, ?)', (name, description))
+            flash('Server created successfully!', 'success')
+        else:
+            flash('Please provide both a name and description for the server.', 'danger')
+        return redirect(url_for('chat_app'))
+    return render_template('MainWeb/games/chatApp/createServer.html', links=links)
 #app.run(debug=True, port=5000, host='10.30.2.10')
-app.run(debug=True, port=5000, host='172.17.17.87')
+#app.run(debug=True, port=5000, host='172.17.17.87')
 #app.run(debug=True, port=5000, host='10.30.2.12')
+app.run(debug=True, port=5000, host='172.20.10.7')

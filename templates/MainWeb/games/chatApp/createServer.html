@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Server</title>
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <h1>Create Server</h1>
+    <form method="POST" action="{{ url_for('create_server') }}">
+        <label for="serverName">Server Name:</label>
+        <input type="text" id="serverName" name="serverName" required>
+        <label for="serverDescription">Server Description:</label>
+        <textarea id="serverDescription" name="serverDescription"></textarea>
+        <button type="submit">Create Server</button>
+    </form>
+</body>
+</html>
