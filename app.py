@@ -223,8 +223,3 @@ def delete_server(server_id):
             db_connection.execute('DELETE FROM messages WHERE server_id = ?', (server_id,))
     flash('Server deleted successfully!', 'success')
     return redirect(url_for('chat_app'))
-#app.run(debug=True, port=5000, host='10.30.2.10')
-#app.run(debug=True, port=5000, host='172.17.17.87')
-#app.run(debug=True, port=5000, host='10.30.2.12')
-#app.run(debug=True, port=5000, host='172.20.10.7')
-app.run(debug=True, port=5000, host='192.168.50.59')
