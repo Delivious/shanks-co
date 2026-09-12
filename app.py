@@ -24,7 +24,7 @@ links = {
             'Music':'MainWeb/music.html',
             'Products':'MainWeb/products.html'
         }
-load_dotenv('settings.env')
+load_dotenv('.env')
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER')
 app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASS')
