@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+</head>
+<body>
+    <div class="row">
+        <div class="containers"><h1>Space Shooter Leaderboard</h1></div>
+    </div>
+    <div class="row">
+        <div class="containers">
+            <a href="../../../static/spaceShooterWindows.zip" download>Download Windows Version</a>
+        </div>
+        <div class="containers">
+            <a href="../../../static/spaceShooterLinux.zip" download>Download Linux Version</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="containers">
+            {% for entry in scores %}
+                {% if loop.index >= 100 %}
+                    {{ continue }}
+                {% else %}
+                    <div class="{{ 'lightGrey' if loop.index0 % 2 == 0 else 'darkGrey' }}">
+                        <b>{{ loop.index }}.</b> {{ entry['username'] }} | {{ entry['score'] }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
