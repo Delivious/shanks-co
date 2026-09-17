@@ -1,0 +1,25 @@
+body{
+    
+    background-color: rgb(0, 0, 0);
+    color: aliceblue;
+}
+.darkGrey{
+    padding: 10px;
+    background-color: rgb(58, 58, 58);
+}
+.lightGrey{
+    background-color: rgb(119, 119, 119);
+    padding: 10px;
+}
+
+.containers{
+    text-align: center;
+    width: 30%;
+    margin: 10px;
+}
+.row{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
